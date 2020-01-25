@@ -12,7 +12,7 @@ from time import time
 # CONTROLS
 ALLOWED_ERROR = 0.005
 MAX_ITERATIONS = 2
-LOWEST_CLUSTERS = 20
+LOWEST_CLUSTERS = 10
 HIGHEST_CLUSTERS = 20
 
 def read_image(target):
@@ -184,7 +184,7 @@ def run_cluster(targetImg, cluster):
     return (trackTime, cntr, u, u0, d, jm, p, fpc)
 
 def main():
-    # POOL = multiprocessing.Pool(processes=2)
+    POOL = multiprocessing.Pool(processes=16)
 
     unrollImg, dimensions = read_image('week_1_page_1.jpg')
 
@@ -199,10 +199,10 @@ def main():
 
     # Iterate clusters
     func = partial(run_cluster, unrollImg)
-    # result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+    result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
     
-    for i in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
-        trackTime, cntr, u, u0, d, jm, p, fpc = run_cluster(unrollImg, i)
+    for resultSet in result:
+        trackTime, cntr, u, u0, d, jm, p, fpc = resultSet
 
         # Create Vizualization
         newImg = change_color_fuzzycmeans(u, cntr)
@@ -219,10 +219,9 @@ def main():
 
         print('BWArea: {}'.format(bwarea(bwfim3)))
 
-        plt.subplot(1,4,i+2)
         plt.imshow(bwfim3)
         plt.title('{} Clusters'.format(i))
-        plt.savefig()
+        plt.savefig('regions_{}_clusters.png'.format(i))
 
     print("Done! Best cluster number for flyer is {}".format(2))
 
