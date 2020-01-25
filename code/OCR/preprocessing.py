@@ -11,7 +11,7 @@ def get_grayscale(image):
 
 # noise removal
 def remove_noise(image):
-    return cv2.medianBlur(image,5)
+    return cv2.medianBlur(image,3)
  
 #thresholding
 def thresholding(image):
@@ -40,7 +40,7 @@ def canny(image):
 def deskew(image):
     coords = np.column_stack(np.where(image > 0))
     angle = cv2.minAreaRect(coords)[-1]
-     if angle < -45:
+    if angle < -45:
         angle = -(90 + angle)
     else:
         angle = -angle
@@ -53,3 +53,19 @@ def deskew(image):
 #template matching
 def match_template(image, template):
     return cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED) 
+
+#only select red pixels to come back
+def get_red(image):
+    print("From GET RED: ")
+
+    # image[:, :, 1] = 0
+    # image[:, :, 2] = 0
+
+    img2 = get_grayscale(image)
+
+    for i in range(0, image.shape[0]):
+        for j in range(0, image.shape[1]):
+            img2[i][j] = 256-image[i][j][1]
+            
+    
+    return image

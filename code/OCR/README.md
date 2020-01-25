@@ -6,11 +6,13 @@
 * [x] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python), [tutorial](https://nanonets.com/blog/ocr-with-tesseract/#introduction))
 * [x] Create a barebones OCR processing function to get started.
 * [x] Find bounding box information (if possible) within the OCR processing function.
-* [ ] Differentiate sections based on `color`.
-* [ ] Add font size to export.
-* [ ] Add font color (based on bounding boxes) to export.
-* [ ] Add average pixel darkness to export (surrogate for bolded/non-bolded).
 * [ ] Implement pre-processing pipeline to optimize results.
+* [ ] Differentiate sections based on `color`.
+
+### Depreciated Tasks
+
+* [ ] Add font size to export.
+* [ ] Add average pixel darkness to export (surrogate for bolded/non-bolded).
 
 ## Notes on Implementation
 
@@ -150,10 +152,12 @@ coords = (
 `output` = `tuple`[
     `dict`{
         `text`: "$5 Off!",
-        `color`: "red", # red, yellow, blue, green, etc.
-        `size`: 15, # integer
-        `font`: "..." # remains to be seen as I do more research. For now, don't worry too much about this.
-        `styling`: "..." # remains to be seen as I do more research.
+		`type`: 
+			1 - Red text, usually price.
+			2 - Grey text, usually more description of savings.
+			3 - Dark black text, usually name of item.
+			4 - Lighter blcak text, usually more information on the item.
+			5 - Body text, more information on deal or random shit. 
     },
     `dict`{
         ...
