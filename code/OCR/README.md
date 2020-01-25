@@ -1,5 +1,13 @@
 # Optical Character Recognition
 
+## Tasks
+
+[ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python))
+[ ] Find bounding box information (if possible) from `Tesseract` output.
+[ ] Differentiate sections based on font size.
+[ ] Add font size to export.
+[ ] Add font color (based on bounding boxes) to export. 
+
 ## Research on OCR Algorithms
 
 ### Requirements
@@ -12,7 +20,7 @@
 
 ### Alternatives
 
-* **Google Tesseract OCR:**
+* **Google Tesseract OCR: S Class**
   * [Repository](https://github.com/tesseract-ocr/tesseract)
   * Utilizes Neural Net LSTM model.
   * Output formats: 
@@ -24,7 +32,12 @@
   * Use in Python: [This repository](https://github.com/nikhilkumarsingh/tesseract-python) has some simple examples.
   * **Overall** Fulfills requirement #1, will need to use other models for the rest of the requirements.
 
-* ****
+* **Manual Font Sizing: B Class**
+  * If bounding box information for lines is available, we can leverage that to create a `font-size` regressor.
+
+* **Manual Color Detection: A Class**
+  * No matter what, we will be getting the coordinates for different text pieces.
+  * If we look for the most common non-white pixel colors, we can deduce the font color relatively easily. 
 
 
 ## Input
