@@ -97,3 +97,31 @@ Goal: Create a `regular expression` (regex) based system for taking the raw text
 ### D: Validation
 
 Goal: (1) Create a validation set comprised of `>= 5` flyers and their corresponding CSV outputs. (2) Create a script that takes a full algorithm/pipeline as input and then grades the algorithm on the aforementioned validation set.
+
+# Optimization Strategy
+
+## 1: Back-Trace the Algorithm's Mistakes on the Validation Set
+
+* If the error was on the NLP, use some smart regex to account for that. 
+
+## 2: Optimize Relevant Hyperparameters using a Juiced Up Computer (Google or Otherwise)
+
+* Image pre-processing optimized based on final accuracy on training set.
+* OCR hyperparameter optimization.
+* etc.
+
+## 3: Contact Experts
+
+* Jad Ghalini.
+* Robert.
+* Hersh.
+* Reddit.
+
+## 4: Use the Help to Expand our Validation Set
+
+This directly helps our final results in that we can have 100% accurate rows in our final product.
+We can also use it to make sure we are not overfitting and to help with the backtracking.
+
+# Questions
+
+* See if we can actually access the file names - if we can, then we can do away with the red bars that contain the information about the date.
