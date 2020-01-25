@@ -41,7 +41,7 @@ It should be specified to typed font faces.
 ## Natural Language Processing
 Regex... fuzzy matches...
 * Matching
-* Regex for (`%`, `/`, ``)
+* Regex for (`%`, `/`, `$`)
 
 ## Image Recognition Libraries
 Likely unnecessary, later stage project.
