@@ -67,6 +67,7 @@ from top to bottom.
 Extra points for differentiating different font sections and all that jazz.
 
 ### C: Natural Language Processing (Divya)
+Input: A tuple of text objects which contain the OCR specifications.
 Goal: Create a `regular expression` (regex) based system for taking the raw text of a given section and determining the following characteristics:
 
 1. `flyer_name`: Name of the file we got the rest of the data from.
