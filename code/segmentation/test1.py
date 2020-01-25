@@ -71,6 +71,9 @@ def imclearborder(imgBW):
 
     contourList = [] # ID list of contours that touch the border
 
+    if contours is None:
+        return imgBWcopy
+
     # For each contour...
     for idx in np.arange(len(contours)):
         # Get the i'th contour
