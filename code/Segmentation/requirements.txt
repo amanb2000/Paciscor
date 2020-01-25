@@ -1,0 +1,6 @@
+scikit-fuzzy
+scipy
+opencv-python
+pandas
+numpy
+matplotlib

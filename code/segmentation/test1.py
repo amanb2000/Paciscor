@@ -1,20 +1,29 @@
+#%% Imports
 import numpy as np
 import matplotlib.pyplot as plt
 import skfuzzy as fuzz
 import os.path as pt
 import cv2
 import numpy as np
+import multiprocessing
+from functools import partial
 from time import time
+
+# CONTROLS
+ALLOWED_ERROR = 0.005
+MAX_ITERATIONS = 2
+LOWEST_CLUSTERS = 10
+HIGHEST_CLUSTERS = 20
 
 def read_image(target):
     # FIX DIS
-    path = '../src/flyers/{}'.format(target)
-    print(path)
-    img = cv2.imread(path)
-    # Re-arrange structure into 3 columns of RGB (reads image top down left to right)
+    path = '../../../src/flyers/{}'.format(target)
+    path = pt.abspath(pt.join(__file__, path))
+    img = cv2.imread(path,0)
     height, width = img.shape
-    rgb_img = img.reshape((height * width, 3))
-    return [rgb_img, (height, width)]
+    # Unroll image into intensity
+    unroll = img.reshape((height * width, 1))
+    return unroll, (height, width)
 
 def change_color_fuzzycmeans(cluster_membership, clusters):
     img = []
@@ -54,14 +63,16 @@ def imclearborder(imgBW):
     # Given a black and white image, first find all of its contours
     radius = 2
     imgBWcopy = imgBW.copy()
-    image, contours,hierarchy = cv2.findContours(imgBWcopy.copy(), cv2.RETR_LIST, 
-        cv2.CHAIN_APPROX_SIMPLE)
+    image, contours = cv2.findContours(imgBWcopy.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     # Get dimensions of image
     imgRows = imgBW.shape[0]
     imgCols = imgBW.shape[1]    
 
     contourList = [] # ID list of contours that touch the border
+
+    if contours is None:
+        return imgBWcopy
 
     # For each contour...
     for idx in np.arange(len(contours)):
@@ -91,8 +102,10 @@ def imclearborder(imgBW):
 def bwareaopen(imgBW, areaPixels):
     # Given a black and white image, first find all of its contours
     imgBWcopy = imgBW.copy()
-    image, contours,hierarchy = cv2.findContours(imgBWcopy.copy(), cv2.RETR_LIST, 
-        cv2.CHAIN_APPROX_SIMPLE)
+    image, contours = cv2.findContours(imgBWcopy.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours is None:
+        return imgBWcopy
 
     # For each contour, determine its total occupying area
     for idx in np.arange(len(contours)):
@@ -122,66 +135,98 @@ def imfill(im_th):
     
     return im_out
 
-# list_img = readimage()
+# for i,cluster in enumerate(clusters):
+        
+#     # Fuzzy C Means
+#     new_time = time()
+    
+#     # error = 0.005
+#     # maximum iteration = 1000
+#     # cluster = 2,3,6,8
+    
+#     cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
+#     rgb_img.T, cluster, 2, error=0.005, maxiter=1000, init=None,seed=42)
 
-# n_data = len(list_img)
-
-# clusters = [2,3,6]
-
-# # looping every images
-# for index,rgb_img in enumerate(list_img):
-#     img = np.reshape(rgb_img, (200,200,3)).astype(np.uint8)
-#     shape = np.shape(img)
+#     new_img = change_color_fuzzycmeans(u,cntr)
+    
+#     fuzzy_img = np.reshape(new_img,shape).astype(np.uint8)
+    
+#     ret, seg_img = cv2.threshold(fuzzy_img,np.max(fuzzy_img)-1,255,cv2.THRESH_BINARY)
+    
+#     print('Fuzzy time for cluster',cluster)
+#     print(time() - new_time,'seconds')
+#     seg_img_1d = seg_img[:,:,1]
     
     
-#     # initialize graph
-#     plt.figure(figsize=(20,20))
-#     plt.subplot(1,4,1)
-#     plt.imshow(img)
-#     # looping every cluster     
-#     print('Image '+str(index+1))
-#     for i,cluster in enumerate(clusters):
-            
-#         # Fuzzy C Means
-#         new_time = time()
-        
-#         # error = 0.005
-#         # maximum iteration = 1000
-#         # cluster = 2,3,6,8
-        
-#         cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
-#         rgb_img.T, cluster, 2, error=0.005, maxiter=1000, init=None,seed=42)
+#     bwfim1 = bwareaopen(seg_img_1d, 100)
+#     bwfim2 = imclearborder(bwfim1)
+#     bwfim3 = imfill(bwfim2)
+    
+#     print('Bwarea : '+str(bwarea(bwfim3)))
+#     print()
 
-#         new_img = change_color_fuzzycmeans(u,cntr)
-        
-#         fuzzy_img = np.reshape(new_img,shape).astype(np.uint8)
-        
-#         ret, seg_img = cv2.threshold(fuzzy_img,np.max(fuzzy_img)-1,255,cv2.THRESH_BINARY)
-        
-#         print('Fuzzy time for cluster',cluster)
-#         print(time() - new_time,'seconds')
-#         seg_img_1d = seg_img[:,:,1]
-        
-        
-#         bwfim1 = bwareaopen(seg_img_1d, 100)
-#         bwfim2 = imclearborder(bwfim1)
-#         bwfim3 = imfill(bwfim2)
-        
-#         print('Bwarea : '+str(bwarea(bwfim3)))
-#         print()
-
-#         plt.subplot(1,4,i+2)
-#         plt.imshow(bwfim3)
-#         name = 'Cluster'+str(cluster)
-#         plt.title(name)
+#     plt.subplot(1,4,i+2)
+#     plt.imshow(bwfim3)
+#     name = 'Cluster'+str(cluster)
+#     plt.title(name)
 
 #     name = 'segmented'+str(index)+'.png'
 #     plt.savefig(name)
 #     print()
 
-def main():
-    print(read_image('week_1_page_1.jpg'))
+def run_cluster(targetImg, cluster):
+    # Fuzzy C
+    trackTime = time()
 
+    cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(targetImg.T, cluster, 2, error=ALLOWED_ERROR, 
+                                                    maxiter=MAX_ITERATIONS, init=None, seed=42)
+
+    return (trackTime, cntr, u, u0, d, jm, p, fpc)
+
+def main():
+    POOL = multiprocessing.Pool(processes=16)
+
+    unrollImg, dimensions = read_image('week_1_page_1.jpg')
+
+    # Format image
+    img = np.reshape(unrollImg, (dimensions[0], dimensions[1])).astype(np.uint8)
+    shape = np.shape(img)
+
+    # initialize graph
+    plt.figure(figsize=(20,20))
+    plt.subplot(1,4,1)
+    plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+
+    # Iterate clusters
+    func = partial(run_cluster, unrollImg)
+    result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+    
+    for resultSet in result:
+        trackTime, cntr, u, u0, d, jm, p, fpc = resultSet
+
+        # Create Vizualization
+        newImg = change_color_fuzzycmeans(u, cntr)
+        fuzzyImg = np.reshape(newImg, shape).astype(np.uint8)
+
+        ret, segImg = cv2.threshold(fuzzyImg, np.max(fuzzyImg)-1, 255, cv2.THRESH_BINARY_INV)
+
+        print('Time for {} clusters: {}'.format(i, time() - trackTime))
+        segImg1d = segImg[:,:]
+
+        bwfim1 = bwareaopen(segImg1d, 100)
+        bwfim2 = imclearborder(bwfim1)
+        bwfim3 = imfill(bwfim2)
+
+        print('BWArea: {}'.format(bwarea(bwfim3)))
+
+        plt.imshow(bwfim3)
+        plt.title('{} Clusters'.format(i))
+        plt.savefig('regions_{}_clusters.png'.format(i))
+
+    print("Done! Best cluster number for flyer is {}".format(2))
+
+
+#%% Give-err
 ## Test Execution
 if __name__ == "__main__":
     main()
