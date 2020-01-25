@@ -125,3 +125,6 @@ We can also use it to make sure we are not overfitting and to help with the back
 # Questions
 
 * See if we can actually access the file names - if we can, then we can do away with the red bars that contain the information about the date.
+* Are we formally disallowed from going through the images by hand for our final CSV? Would/how would they know?
+* Can we use external help for annotation?
+* Can we talk to experts outside of the team?
