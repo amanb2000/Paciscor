@@ -1,5 +1,32 @@
 # Optical Character Recognition
 
+## Research on OCR Algorithms
+
+### Requirements
+
+1. Must work well for `typed` font faces.
+2. Should regress `size` of text.
+3. Should classify `color`.
+4. Should classify `font`.
+5. Should classify `font-style`.
+
+### Alternatives
+
+* **Google Tesseract OCR:**
+  * [Repository](https://github.com/tesseract-ocr/tesseract)
+  * Utilizes Neural Net LSTM model.
+  * Output formats: 
+    * Plain text.
+	* HTML.
+	* TSV. 
+  * [Methods of quality improvement](https://github.com/tesseract-ocr/tesseract/wiki/ImproveQuality)
+  * Does not seem to have the ability to tell the color or size or styling.
+  * Use in Python: [This repository](https://github.com/nikhilkumarsingh/tesseract-python) has some simple examples.
+  * **Overall** Fulfills requirement #1, will need to use other models for the rest of the requirements.
+
+* ****
+
+
 ## Input
 
 1. `path`: Path to .jpg file we are analyzing.
