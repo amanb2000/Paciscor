@@ -181,10 +181,10 @@ def run_cluster(targetImg, cluster):
     cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(targetImg.T, cluster, 2, error=ALLOWED_ERROR, 
                                                     maxiter=MAX_ITERATIONS, init=None, seed=42)
 
-    return (trackTime, cntr, u, u0, d, jm, p, fpc)
+    return (trackTime, cntr, u, fpc)
 
 def main():
-    POOL = multiprocessing.Pool(processes=16)
+    POOL = multiprocessing.Pool(processes=5)
 
     unrollImg, dimensions = read_image('week_1_page_1.jpg')
 
@@ -202,7 +202,7 @@ def main():
     result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
     
     for resultSet in result:
-        trackTime, cntr, u, u0, d, jm, p, fpc = resultSet
+        trackTime, cntr, u, fpc = resultSet
 
         # Create Vizualization
         newImg = change_color_fuzzycmeans(u, cntr)
