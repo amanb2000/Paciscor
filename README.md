@@ -102,7 +102,7 @@ Goal: (1) Create a validation set comprised of `>= 5` flyers and their correspon
 
 ## 1: Back-Trace the Algorithm's Mistakes on the Validation Set
 
-* If the error was on the NLP, use some smart regex to account for that. 
+* If the error was on the NLP, use some smart regex to account for that.
 
 ## 2: Optimize Relevant Hyperparameters using a Juiced Up Computer (Google or Otherwise)
 

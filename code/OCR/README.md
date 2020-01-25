@@ -2,13 +2,15 @@
 
 ## Tasks
 
-* [ ] Create personal virtual environment.
-* [ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python), [tutorial](https://nanonets.com/blog/ocr-with-tesseract/#introduction))
-* [ ] Find bounding box information (if possible) from `Tesseract` output.
+* [x] Create personal virtual environment.
+* [x] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python), [tutorial](https://nanonets.com/blog/ocr-with-tesseract/#introduction))
+* [x] Create a barebones OCR processing function to get started.
+* [ ] Find bounding box information (if possible) within the OCR processing function.
 * [ ] Differentiate sections based on font size.
 * [ ] Add font size to export.
 * [ ] Add font color (based on bounding boxes) to export.
 * [ ] Add average pixel darkness to export (surrogate for bolded/non-bolded).
+* [ ] Implement pre-processing pipeline to optimize results.
 
 ## Notes on Implementation
 
