@@ -2,11 +2,11 @@
 
 ## Tasks
 
-[ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python))
-[ ] Find bounding box information (if possible) from `Tesseract` output.
-[ ] Differentiate sections based on font size.
-[ ] Add font size to export.
-[ ] Add font color (based on bounding boxes) to export. 
+* [ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python))
+* [ ] Find bounding box information (if possible) from `Tesseract` output.
+* [ ] Differentiate sections based on font size.
+* [ ] Add font size to export.
+* [ ] Add font color (based on bounding boxes) to export. 
 
 ## Research on OCR Algorithms
 
