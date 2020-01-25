@@ -2,3 +2,4 @@
 /venv
 /env
 /paciscor-env
+__pycache__/
