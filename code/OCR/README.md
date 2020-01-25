@@ -2,7 +2,8 @@
 
 ## Tasks
 
-* [ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python))
+* [ ] Create personal virtual environment.
+* [ ] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python), [tutorial](https://nanonets.com/blog/ocr-with-tesseract/#introduction))
 * [ ] Find bounding box information (if possible) from `Tesseract` output.
 * [ ] Differentiate sections based on font size.
 * [ ] Add font size to export.
