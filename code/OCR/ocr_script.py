@@ -2,6 +2,7 @@ import cv2
 import pytesseract
 import numpy as np
 import pandas as pd
+import json
 
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -188,8 +189,8 @@ def get_avg_coloured_pixel(img, left, top, width, height):
 
     area = 1
 
-    for i in range(left, min(left+width, img.shape[0])):
-        for j in range(top, min(top+height, img.shape[1])):
+    for j in range(left, left+width):
+        for i in range(top, top+height):
             if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
                 avg_red += img[i][j][2]
                 avg_green += img[i][j][1]
@@ -202,13 +203,16 @@ def get_avg_coloured_pixel(img, left, top, width, height):
     avg_blue /= area
     avg_green /= area
 
-    return((avg_blue, avg_green, avg_red))
+    overall_avg = avg_red + avg_green + avg_blue
+    overall_avg /= 2.0
+
+    return(overall_avg)
 
 def get_percent_coloured(img, left, top, width, height):
     area = 0
 
-    for i in range(left, min(left+width, img.shape[0])):
-        for j in range(top, min(img.shape[1], top+height)):
+    for j in range(left, left+width):
+        for i in range(top, top+height):
             if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
                 area += 1
 
@@ -228,13 +232,14 @@ if __name__ == "__main__":
         # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
         tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
 
-        print(tuple_out)
+        app_json = json.dumps(tuple_out)
+        print(app_json) # JSON encoding time
         break
 
         # print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
         # visualize_results(tuple_out[0])
-        print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
-        visualize_results(tuple_out[1])
+        # print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
+        # visualize_results(tuple_out[1])
 
         # print(tuple_out[1]['data'])
 
@@ -261,7 +266,7 @@ if __name__ == "__main__":
                 percent = get_percent_coloured(img, left, top, width, height)
                 print('Word: {} \tAverage Colour: {} \tPercent Coloured: {} \tCoordinates: {},{}'.format(word, avg_color, percent, left, top))
 
-                img = cv2.rectangle(img, (left, top), (left + width, top+height), (0, 0, 255), 2)
+                # img = cv2.rectangle(img, (left, top), (left + width, top+height), (0, 0, 255), 2)
 
         cv2.imshow("Image Output", img)
         cv2.waitKey(0)
