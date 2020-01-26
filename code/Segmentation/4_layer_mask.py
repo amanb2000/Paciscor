@@ -7,6 +7,7 @@ from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 import os.path as pt
 import multiprocessing
+import time
 
 COLORS = [[149, 255, 192], [58, 50, 31], [18, 205, 41], [55, 29, 86], [13, 171, 58], [87, 125, 121], [146, 178, 99], [245, 245, 17], [124, 218, 156],
             [14, 182, 155], [183, 207, 161], [38, 209, 25], [22, 185, 127], [250, 116, 161], [167, 253, 28], [110, 224, 160], [175, 16, 146],
@@ -42,7 +43,10 @@ def run_cluster(params):
     clusters = params['clusters']
     criteria = params['criteria']
     pixel_values = params['img']
+    image = params['src']
     MAX_TRIALS, COLORS = params['CONSTANTS']
+
+    trackTime = time()
 
     # Begin calcs
 
@@ -71,18 +75,19 @@ def run_cluster(params):
     for lbl in range(0, clusters, 1):
         locs = np.where(truthImg==lbl)
         x_min, x_max, y_min, y_max = np.amin(locs[1]), np.amax(locs[1]), np.amin(locs[0]), np.amax(locs[0])
-        print(x_min, x_max, y_min, y_max)
+        # print(x_min, x_max, y_min, y_max)
         w = np.cos
         rect = Rectangle((x_min, y_min), x_max-x_min, y_max-y_min)
         boxes.append(rect)
     pc = PatchCollection(boxes, facecolor='None', edgecolor="red", linewidths=2)
-    print("made rects")
     ax.add_collection(pc)
         # plt.gca().add_patch(rect[lbl])
         # plt.show()
 
     # Save
     plt.savefig('{}__K_{}_compat_{}.png'.format(tg, clusters, int(compat)))
+
+    print("Completed computation for {} clusters in {}s".format(clusters, time() - trackTime))
 
     return clusters, compat, (labels, centers)
 
@@ -97,7 +102,7 @@ pixel_values = np.float32(pixel_values)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
 
-result = POOL.map(run_cluster, [{'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+result = POOL.map(run_cluster, [{'src': image, 'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
 POOL.close()
 POOL.join()
 
