@@ -1,9 +1,23 @@
+import pandas as pd
+
+
 class Validator(object):
 	"""Validates a given output with a manually generated test case.
 	"""
 
-	def __init__(self, _validData):
-		self,validData = _validData
+	def __init__(self, pathValid="src/hand_calculated.csv", pathCalculated="src/sample_output.csv"):
+		self.validDF = pd.read_csv(pathValid, sep=',')
+		self.calcDF = pd.read_csv(pathCalculated)
+		print(self.calcDF)
 
-	def validate_row(self, exclude=[]):
-		"""Checks to see if the row is completed while not accounting for the exclude items."""
+	def analyze(self):
+		"""Analyzes the accuracy of the data."""
+		for i in range(0, len(self.calcDF.columns), 1):
+			pass
+
+
+
+
+if __name__ == "__main__":
+	validator = Validator()
+	validator.analyze()
