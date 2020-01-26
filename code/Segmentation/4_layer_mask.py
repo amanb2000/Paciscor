@@ -41,6 +41,7 @@ def run_cluster(params):
     # Unpack params
     clusters = params['clusters']
     criteria = params['criteria']
+    pixel_values = params['img']
     MAX_TRIALS, COLORS = params['CONSTANTS']
 
     # Begin calcs
@@ -96,7 +97,7 @@ pixel_values = np.float32(pixel_values)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
 
-result = POOL.map(run_cluster, [{'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+result = POOL.map(run_cluster, [{'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
 POOL.close()
 POOL.join()
 
