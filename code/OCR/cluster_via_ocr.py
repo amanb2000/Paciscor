@@ -27,12 +27,12 @@ def get_map(path, debug = False, step_size = 50, radius = 100):
     
     return im_out
 
-def goodness_of_centroids(heat_map, points):
+# def goodness_of_centroids(heat_map, points): # TODO: Get this function done
     # heat map is an OpenCV image and points is 
 
 
 if __name__ == '__main__':
-    a = get_centroids('py-testing/week_24_page_1.png', debug = True)
+    a = get_map('py-testing/week_24_page_1.png', debug = True)
 
     cv2.imshow('Centroid Test', a)
     cv2.waitKey(0)

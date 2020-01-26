@@ -21,8 +21,9 @@
 * [ ] Create JPEG => PNG conversion script.
 * [ ] Create an OCR-based segmentation algorithm:
   * [x] Create paramaterized algorithm that assigns a score to each (x, y) coordinate pair based on how many OCR-recornized words there are in an `n` pixel radius. It should take `m` long steps.
-  * [ ] Threshold filter.
-  * [ ] Determine {upper left} and {bottom right} coordinates.
+  * [x] Threshold filter.
+  * [x] Determine {upper left} and {bottom right} coordinates.
+  * [ ] Create a function that determines the goodness of a coordinate pair for surrounding text based on the heat map representation of things. Should be based entirely on the average density of text over that region.
 
 ## Notes on Implementation
 

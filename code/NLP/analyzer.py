@@ -79,8 +79,8 @@ class NLP_Analyzer(object):
 
 		# Create units string for regex
 		self.UNITS_STR = ''
-		for unit in self.metricInventory.iterrows():
-			self.UNITS_STR += unit[1] + '|'
+		for index, row in self.metricInventory.iterrows(): # If this stops working, ask Aman to fix it on your computer.
+			self.UNITS_STR += row['units'] + '|'
 		self.UNITS_STR = self.UNITS_STR[:-1]
 
 	def analyze(self, block):
