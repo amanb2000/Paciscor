@@ -17,40 +17,35 @@ from ocr_library import *
 
 
 
-def get_map(path, debug = False, step_size = 50, radius = 100):
-    print('\n\nStarting blurred map OCR process... \n\n')
-
-    img, dict_in = get_data(path, conf=r'--oem 1 --psm 11', debug=debug) # No coordinates given because we are analyzing the entire picture.
-    
-    df = get_centers(dict_in[1]) # Getting the central coordinates of every single word (along with the confidene and dimensions of the bounding box).
-
-    im_out = get_blurred_map(df, img, step_size, radius)
-    
-    return im_out
-
-def get_heat_density(heat_map, points):
-    y1 = points[0][1]
-    y2 = points[1][1]
-    x1 = points[0][0]
-    x2 = points[1][0]
-    subsection = heat_map[y1:y2, x1:x2]
-
-    average = subsection.mean(axis=0).mean(axis=0)
-
-    return average
-
-# def goodness_of_centroids(heat_map, points): # TODO: Get this function done
-    # heat map is an OpenCV image and points is a tuple of tuples that consists of a coordinate pair for the top left and bottom right corners.
 
 
 
 
 
 if __name__ == '__main__':
-    a = get_map('py-testing/week_24_page_1.png', debug = True)
+    toggle = False
 
-    with open('heat_map.pickle', 'wb') as f:
-        pickle.dump(a, f)
+    if toggle:
+        a = get_map('py-testing/week_24_page_1.png', debug = True)
 
-    cv2.imshow('Centroid Test', a)
-    cv2.waitKey(0)
+        with open('heat_map.pickle', 'wb') as f:
+            pickle.dump(a, f)
+
+        cv2.imshow('Centroid Test', a)
+        cv2.waitKey(0)
+    else:
+        lob = ''
+        with open('heat_map.pickle', 'rb') as f:
+            lob = pickle.load(f)
+            lob = cv2.cvtColor(lob,cv2.COLOR_GRAY2RGB)
+
+        coords = ((409, 2338), (875, 3024))
+
+        avg = get_heat_density(lob, coords)
+
+        print('AVERAGE HEAT INTENSITY: {}'.format(avg))
+
+        lab = cv2.rectangle(lob, (coords[0][0], coords[0][1]), (coords[1][0], coords[1][1]), (0, 0, 255), 2)
+
+        cv2.imshow('Centroid Test', lab)
+        cv2.waitKey(0)

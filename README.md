@@ -4,6 +4,18 @@ Daisy Intelligence Hackathon 2020
 
 # Framing
 
+## Dependencies
+
+* OpenCV 2
+* Tesseract
+* Pytesseract
+* Numpy
+* Pandas
+* Matplotlib
+* tqdm
+* json
+* math
+
 ## Given
 
 * Set of coupon images (multiple ad blocks in each that must be segmented and processed).
