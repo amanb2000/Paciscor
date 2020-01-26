@@ -204,7 +204,7 @@ def pre_process_block(path, coords, conf=r'--oem 1 --psm 11', debug=False):
             tuple_in = process_block(path, coord)
             list_out += [tuple_in]
             
-
+    
 
 def process_block(path, coord, conf=r'--oem 1 --psm 11', debug=False):
     im2, twople = get_data(path, coords = coord, conf = conf, debug = debug)
