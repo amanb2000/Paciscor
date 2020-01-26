@@ -163,7 +163,7 @@ def get_blurred_map(df, img, step_size, radius):
     print('Done getting blurred map.')
     print('Applying blurred map to pre-existing image for reference...')
 
-    im_out = cv2.addWeighted(im_out,0.5,img,0.5,0)
+    # im_out = cv2.addWeighted(im_out,0.5,img,0.5,0)
     
     print('Done!')
 
