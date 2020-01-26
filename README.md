@@ -128,3 +128,43 @@ We can also use it to make sure we are not overfitting and to help with the back
 * Are we formally disallowed from going through the images by hand for our final CSV? Would/how would they know?
 * Can we use external help for annotation?
 * Can we talk to experts outside of the team?
+
+# Final Sprint
+
+## Things that Must Be Done
+
+### OCR Pipeline
+
+* [ ] Differentiate sections based on `size` and if it's grey.
+  * [ ] Fix the `get_percent_coloured` function.
+  * [ ] Fix the `get_avg_coloured_pixel` function.
+* [ ] Integrate segmentation input.
+
+### Segmentation
+
+* [ ] Draw rectangles on plots
+* [ ] Adjust weightings to perfect targetting
+
+### NLP
+
+* [ ] .
+
+### Validation
+
+* [ ] Create autograder.
+* [ ] Generate hyperparameters (time permitting).
+* [ ] Optimize hyperparameters (time permitting). 
+
+### Put Together
+
+* [ ] Integrate Segmentation
+    * Interface inputs
+    * Interface outputs
+* [ ] Integrate OCR
+    * Interface inputs
+    * Interface outputs
+* [ ] Integrate NLP
+    * Interface inputs
+    * Interface outputs
+* [ ] Format output CSV (round to 2 decimals)
+* [ ] Build runner for start to finish integration

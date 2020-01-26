@@ -43,18 +43,23 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
     rs = pytesseract.image_to_string(red_img, config=conf)
     print('Done getting data!\n')
 
+    ret_image = raw_img
+
+    if coords:
+        ret_image = raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
+
     ret_val = (
         {
             'text': rs,
             'type': 1,
             'data': r,
-            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
+            # 'image': ret_image
         },
         {
             'text': s,
             'type': 2,
             'data': d,
-            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
+            # 'image': ret_image
         }
     )
 
@@ -64,7 +69,7 @@ def visualize_results(dict_in):
     img = dict_in['image']
     data = dict_in['data']
 
-    img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+    # img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
 
     bounds = (0, 33, 0, 100, 0)
     # Proper green
@@ -90,7 +95,7 @@ def visualize_results(dict_in):
             (x, y, w, h) = (data['left'][i], data['top'][i], data['width'][i], data['height'][i])
             img = cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
 
-    print(dict_in['text'])
+    # print(dict_in['text'])
 
     # print(data['conf'])
 
@@ -208,7 +213,7 @@ def get_percent_coloured(img, left, top, width, height):
                 area += 1
 
     total_area = float(width * height)
-    return(area/total_area)
+    return((area*100.0)/total_area)
 
 if __name__ == "__main__":
     coords = (
@@ -223,28 +228,40 @@ if __name__ == "__main__":
         # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
         tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
 
+        print(tuple_out)
+        break
+
         # print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
         # visualize_results(tuple_out[0])
-        # print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
-        # visualize_results(tuple_out[1])
+        print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
+        visualize_results(tuple_out[1])
 
         # print(tuple_out[1]['data'])
 
         img = tuple_out[1]['image']
 
-        cv2.imshow("Image Output", img)
-        cv2.waitKey(0)
+        # cv2.imshow("Image Output", img)
+        # cv2.waitKey(0)
 
+        # print(tuple_out[1]['data'])
 
-        for j in range(len(tuple_out[1]['data'])):
+        # input('\nEnter to continue...')
+        for j in range(len(tuple_out[1]['data']['level'])):
             word = tuple_out[1]['data']['text'][j]
             left = tuple_out[1]['data']['left'][j]
             top = tuple_out[1]['data']['top'][j]
             width = tuple_out[1]['data']['width'][j]
             height = tuple_out[1]['data']['height'][j]
 
+            if word.strip() != '':
+                print('getting average color... ')
+                avg_color = get_avg_coloured_pixel(img, left, top, width, height)
 
-            avg_color = get_avg_coloured_pixel(img, left, top, width, height)
-            percent = get_percent_coloured(img, left, top, width, height)
+                print('getting percent coloured... \n')
+                percent = get_percent_coloured(img, left, top, width, height)
+                print('Word: {} \tAverage Colour: {} \tPercent Coloured: {} \tCoordinates: {},{}'.format(word, avg_color, percent, left, top))
 
-            print('Word: {} \tAverage Colour: {} \tPercent Coloured: {}'.format(word, avg_color, percent))
+                img = cv2.rectangle(img, (left, top), (left + width, top+height), (0, 0, 255), 2)
+
+        cv2.imshow("Image Output", img)
+        cv2.waitKey(0)
