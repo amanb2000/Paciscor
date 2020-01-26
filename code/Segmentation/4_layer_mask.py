@@ -28,7 +28,7 @@ pixel_values = np.float32(pixel_values)
 # print(pixel_values.shape)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-k = 2
+k = 18
 
 _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
