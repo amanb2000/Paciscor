@@ -6,6 +6,7 @@ import matplotlib.patches as patches
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 import os.path as pt
+import multiprocessing
 
 COLORS = [[149, 255, 192], [58, 50, 31], [18, 205, 41], [55, 29, 86], [13, 171, 58], [87, 125, 121], [146, 178, 99], [245, 245, 17], [124, 218, 156],
             [14, 182, 155], [183, 207, 161], [38, 209, 25], [22, 185, 127], [250, 116, 161], [167, 253, 28], [110, 224, 160], [175, 16, 146],
@@ -36,19 +37,14 @@ def read_image(target):
                 mappedImg.append([i, j])
     return invImg, np.array(mappedImg), (height, width)
 
+def run_cluster(params):
+    # Unpack params
+    clusters = params['clusters']
+    criteria = params['criteria']
+    MAX_TRIALS, COLORS = params['CONSTANTS']
 
-tg = 'week_1_page_1.jpg'
+    # Begin calcs
 
-image = read_image(tg)
-
-pixel_values = image[1].reshape((-1, 2))
-pixel_values = np.float32(pixel_values)
-
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
-
-currentBest = [0, None, None]
-
-for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
     compat, labels, (centers) = cv2.kmeans(pixel_values, clusters, None, criteria, MAX_TRIALS, cv2.KMEANS_RANDOM_CENTERS)
 
     # Normalize results
@@ -87,8 +83,28 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
     # Save
     plt.savefig('{}__K_{}_compat_{}.png'.format(tg, clusters, int(compat)))
 
+    return clusters, compat, (labels, centers)
+
+POOL = multiprocessing.Pool(processes=5)
+
+tg = 'week_1_page_1.jpg'
+
+image = read_image(tg)
+
+pixel_values = image[1].reshape((-1, 2))
+pixel_values = np.float32(pixel_values)
+
+criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
+
+result = POOL.map(run_cluster, [{'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+POOL.close()
+POOL.join()
+
+currentBest = [0, None, None]
+
+for resultSet in result:
     # Compare for best clustering
-    if currentBest[1] is None or abs(TARGET_COMPAT - compat) < currentBest[1]:
-        currentBest = [clusters, abs(TARGET_COMPAT - compat), (labels, centers)]
+    if currentBest[1] is None or abs(TARGET_COMPAT - resultSet[1]) < currentBest[1]:
+        currentBest = [resultSet[0], abs(TARGET_COMPAT - resultSet[1]), resultSet[2]]
 
 print("It is concluded that the best clustering is {}".format(currentBest[0]))
