@@ -55,7 +55,7 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
     final = np.full((image[2][0], image[2][1], 3), 255)
 
     for pt, val in zip(image[1], labels.flatten()):
-        final[pt[0], pt[1]] = colors[val]
+        final[pt[0], pt[1]] = COLORS[val]
 
     # Plot
     plt.imshow(final)
