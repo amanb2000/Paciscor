@@ -5,6 +5,8 @@ import pandas as pd
 import json
 import math
 
+from time import time
+
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.ticker import PercentFormatter
@@ -142,9 +144,6 @@ def get_blurred_map(df, img, step_size, radius):
                     dist = math.sqrt(abs(row['center-x']-i)**2 + abs(row['center-y']-j)**2)
                     cnt += 10/dist
 
-            if cnt > max_cnt:
-                max_cnt = cnt
-
             cnt *= 180
             avg_conf = min(cnt, 255)
 
@@ -195,6 +194,18 @@ def is_black(img, left, top, width, height): # for black and white images.
     return False
 
 # Final function for OCRing a given block specified by a path to an image and a tuple of tuples representing the coordinates.
+def pre_process_block(path, coords, conf=r'--oem 1 --psm 11', debug=False):
+    heat_map = get_map(path, debug = False)
+
+    list_out = []
+
+    for coord in coords:
+        if acceptable_centroid(heat_map, coord):
+            tuple_in = process_block(path, coord)
+            list_out += [tuple_in]
+            
+
+
 def process_block(path, coord, conf=r'--oem 1 --psm 11', debug=False):
     im2, twople = get_data(path, coords = coord, conf = conf, debug = debug)
 
@@ -249,6 +260,32 @@ def process_block(path, coord, conf=r'--oem 1 --psm 11', debug=False):
     list_out += [third_dict]
 
     return tuple(list_out)
+
+def get_map(path, debug = False, step_size = 50, radius = 100):
+    print('\n\nStarting blurred map OCR process... \n\n')
+
+    img, dict_in = get_data(path, conf=r'--oem 1 --psm 11', debug=debug) # No coordinates given because we are analyzing the entire picture.
+    
+    df = get_centers(dict_in[1]) # Getting the central coordinates of every single word (along with the confidene and dimensions of the bounding box).
+
+    im_out = get_blurred_map(df, img, step_size, radius)
+    
+    return im_out
+
+def get_heat_density(heat_map, points):
+    y1 = points[0][1]
+    y2 = points[1][1]
+    x1 = points[0][0]
+    x2 = points[1][0]
+    subsection = heat_map[y1:y2, x1:x2]
+
+    average = subsection.mean(axis=0).mean(axis=0)
+
+    return average
+
+def acceptable_centroid(heat_map, points): # TODO: Get this function done
+    # heat map is an OpenCV image and points is a tuple of tuples that consists of a coordinate pair for the top left and bottom right corners.
+    return get_heat_density(heat_map, points) > 20:
 
 
 if __name__ == "__main__":
