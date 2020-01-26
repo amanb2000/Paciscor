@@ -25,10 +25,11 @@ def read_image(target):
     # unrollImg = img.reshape((height * width), 3)
     # Invert
     invImg = cv2.bitwise_not(img)
-    mappedImg = np.empty((height * width, 3))
+    mappedImg = np.array()
     for i in range(0, height, 1):
         for j in range(0, width, 1):
-            mappedImg[i*width + j] = [i, j, invImg[i,j]]
+            if invImg[i,j] > 120:
+                mappedImg.append([i, j])
     return mappedImg, (height, width)
 
 def change_color_fuzzycmeans(cluster_membership, clusters):
@@ -87,7 +88,7 @@ def main():
 
 
         for pt in cntr:
-            print(pt[0], pt[1], pt[2])
+            print(pt[0], pt[1])
             plt.plot(pt[0], pt[1], 'rs')
 
         plt.title('{} Clusters, FPC: {}'.format(cluster, fpc))
