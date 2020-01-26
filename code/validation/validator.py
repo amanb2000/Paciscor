@@ -10,11 +10,14 @@ class Validator(object):
 		self.calcDF = pd.read_csv(pathCalculated)
 		print(self.calcDF)
 
-	def analyze(self, pathData):
+	def analyze(self):
 		"""Analyzes the accuracy of the data."""
-		return
+		for i in range(0, len(self.calcDF.columns), 1):
+			pass
+
 
 
 
 if __name__ == "__main__":
 	validator = Validator()
+	validator.analyze()
