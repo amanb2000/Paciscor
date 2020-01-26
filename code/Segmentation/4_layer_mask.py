@@ -95,7 +95,7 @@ def run_cluster(params):
 
 POOL = multiprocessing.Pool(processes=5)
 
-tg = 'week_2_page_3.jpg'
+tg = 'week_2_page_2.jpg'
 
 image = read_image(tg)
 
