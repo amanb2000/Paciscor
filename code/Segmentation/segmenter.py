@@ -28,7 +28,7 @@ def read_image(target):
     mappedImg = []
     for i in range(0, height, 1):
         for j in range(0, width, 1):
-            if invImg[i,j] > 120:
+            if invImg[i,j] > 200:
                 mappedImg.append([i, j])
     return np.array(mappedImg), (height, width)
 
@@ -55,8 +55,13 @@ def main():
     # initialize graph
     # plt.figure(figsize=(20,20))
     # img = srcImg.reshape(dimensions[0], dimensions[1])
-    # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    print(len(srcImg))
+    for pt in srcImg:
+        plt.plot(pt[0], pt[1])
+    plt.show()
     # plt.savefig('blacked')
+
+    exit()
 
     # Iterate clusters
     func = partial(run_cluster, srcImg)
