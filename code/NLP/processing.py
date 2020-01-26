@@ -12,6 +12,11 @@ def generateUnitsInventory(path="src/units_dictionary.csv"):
 	"""Outputs a Dataframe structure, a column vector with names of possible units of measurement."""
 	return pd.read_csv(path)
 
+def generateDiscountInventory(path="src/discount_dictionary.csv"):
+	return pd.read_csv(path)
+
+
 if __name__ == "__main__":
 	print(generateProductInventory())
 	print(generateUnitsInventory())
+	print(generateDiscountInventory())
