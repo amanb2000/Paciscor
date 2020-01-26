@@ -220,6 +220,7 @@ def main():
         # bwfim3 = imfill(bwfim2)
 
         # print('BWArea: {}'.format(bwarea(bwfim3)))
+        print(cntr)
         for pt in cntr:
             plt.plot(pt[0], pt[1], 'rs')
 
