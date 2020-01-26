@@ -189,6 +189,10 @@ class NLP_Analyzer(object):
 				else:
 					others += [data]
 		# Evaluate data
+		# Begin with driving
+		unit = re.findall('{}'.format(self.UNITS_STR))
+		if unit is None or len(unit) < 1:
+			
 		print(driving)
 		print(others)
 		return
