@@ -45,6 +45,7 @@ def run_cluster(params):
     pixel_values = params['img']
     image = params['src']
     MAX_TRIALS, COLORS = params['CONSTANTS']
+    filename = params['fname']
 
     trackTime = time()
 
@@ -85,7 +86,7 @@ def run_cluster(params):
         # plt.show()
 
     # Save
-    plt.savefig('{}__K_{}_compat_{}.png'.format(tg, clusters, int(compat)))
+    plt.savefig('{}__K_{}_compat_{}.png'.format(filename, clusters, int(compat)))
 
     print("Completed computation for {} clusters in {}s".format(clusters, time() - trackTime))
 
@@ -102,7 +103,7 @@ pixel_values = np.float32(pixel_values)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
 
-result = POOL.map(run_cluster, [{'src': image, 'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+result = POOL.map(run_cluster, [{'fname': tg, 'src': image, 'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
 POOL.close()
 POOL.join()
 
