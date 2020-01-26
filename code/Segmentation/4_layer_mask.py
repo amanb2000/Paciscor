@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as patches
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
 import os.path as pt
 
 COLORS = [[149, 255, 192], [58, 50, 31], [18, 205, 41], [55, 29, 86], [13, 171, 58], [87, 125, 121], [146, 178, 99], [245, 245, 17], [124, 218, 156],
@@ -53,7 +55,7 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
 
     labels = labels.flatten()
 
-    
+
     # Prep plot data
     final = np.full((image[2][0], image[2][1], 3), 255)
     truthImg = np.full((image[2][0], image[2][1]), -1)
@@ -63,16 +65,20 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
         truthImg[pt[0], pt[1]] = val
 
     # Plot
-    plt.axes()
-    plt.imshow(final)
+    fig, ax = plt.subplots(1)
+    ax.imshow(final)
 
     # Add rectangles
-    rect = []
+    boxes = []
     for lbl in range(0, clusters, 1):
         locs = np.where(truthImg==lbl)
         x_min, x_max, y_min, y_max = np.amin(locs[1]), np.amax(locs[1]), np.amin(locs[0]), np.amax(locs[0])
         print(x_min, x_max, y_min, y_max)
-        # rect += [patches.Rectangle((x_min,y_max), x_max - x_min, y_max - y_min, linewidth=2, edgecolor=COLORS[lbl], facecolor='none')]
+        w = np.cos
+        rect = Rectangle((x_min, y_min), x_max-x_min, y_max-y_min)
+        boxes.append(rect)
+    pc = PatchCollection(boxes, facecolor='None', edgecolor="red", linewidths=2)
+    ax.add_collection(pc)
         # plt.gca().add_patch(rect[lbl])
         # plt.show()
 
@@ -84,4 +90,3 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
         currentBest = [clusters, abs(TARGET_COMPAT - compat), (labels, centers)]
 
 print("It is concluded that the best clustering is {}".format(currentBest[0]))
-
