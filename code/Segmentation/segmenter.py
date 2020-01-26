@@ -86,13 +86,12 @@ def main():
         centers = np.uint8(cntr)
 
         print(centers)
-        ax = plt.figure().add_subplot(111, projection='3d')
 
         for pt in cntr:
-            ax.plot(pt[0], pt[1], pt[2], 'rs')
+            plt.plot(pt[0], pt[1], 'rs')
 
-        ax.title('{} Clusters, FPC: {}'.format(cluster, fpc))
-        ax.savefig('regions_{}_clusters.png'.format(cluster))
+        plt.title('{} Clusters, FPC: {}'.format(cluster, fpc))
+        plt.savefig('regions_{}_clusters.png'.format(cluster))
 
     print("Done! Best cluster number for flyer is {}".format(2))
 
