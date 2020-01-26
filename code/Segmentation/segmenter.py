@@ -12,7 +12,7 @@ from time import time
 # CONTROLS
 ALLOWED_ERROR = 0.005
 MAX_ITERATIONS = 2
-LOWEST_CLUSTERS = 10
+LOWEST_CLUSTERS = 18
 HIGHEST_CLUSTERS = 20
 
 def read_image(target):
@@ -85,9 +85,9 @@ def main():
 
         centers = np.uint8(cntr)
 
-        print(centers)
 
         for pt in cntr:
+            print(pt[0], pt[1], pt[2])
             plt.plot(pt[0], pt[1], 'rs')
 
         plt.title('{} Clusters, FPC: {}'.format(cluster, fpc))
