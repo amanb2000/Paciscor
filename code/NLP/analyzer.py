@@ -21,7 +21,7 @@ class KeyChars(object):
 		self.least_unit_for_promo = []  # minimum quantity before promotion applies, def=1
 		self.save_per_unit = []  # savings per unit
 		self.discount = []  # discount from original price
-		self.organic = []  # boolean indicating organic (1) or not organic (0), def=0
+		self.organic = 0 # boolean indicating organic (1) or not organic (0), def=0
 
 	def getMetric(self, sample):
 		"""ONLY USED BY MAX/MIN/SORTING FUNCTIONS"""
@@ -29,6 +29,7 @@ class KeyChars(object):
 
 	@staticmethod
 	def getHeirachy(keyChar):
+		"""ONLY USED BY MAX/MIN/SORTING FUNCTIONS"""
 		return keyChar.dictHeirachy
 
 
@@ -49,9 +50,9 @@ class NLPAnalyzer(object):
 		if not isinstance(block, tuple):
 			raise TypeError("segment should be of type tuple")
 
-		found = {"flyer_name": False, "product_name": False, "unit_promo_price": False,
-						"uom": False, "least_unit_for_promo": False, "save_per_unit": False,
-						"discount": False, "organic": False}
+		# found = {"flyer_name": False, "product_name": False, "unit_promo_price": False,
+		# 				"uom": False, "least_unit_for_promo": False, "save_per_unit": False,
+		# 				"discount": False, "organic": False}
 
 		# loop through the block of 5 dicts
 		for segment in block:
@@ -62,17 +63,19 @@ class NLPAnalyzer(object):
 			if phrase == "":
 				continue
 			# check the phrase for information
-			self.checkProductName(phrase, keyChars)
+			self.checkDeal(phrase, keyChars)
+			self.checkProductName(phrase, keyChars)  # product name
+			self.checkOrganic(phrase, keyChars)  # organic
 
 			# store the keyChar instant
 			self.store.append(keyChars)
-			print(keyChars.product_name)
 
 		# sort store in order of dict heirachy from 1 (index 0) to 5 (index 4)
 		self.store = sorted(self.store, key=KeyChars.getHeirachy)
 		results = KeyChars(0)
 
 		results.product_name = self.voteProductName()
+		results.organic = self.voteOrganic()
 
 
 		# reset to an empty list
@@ -81,7 +84,7 @@ class NLPAnalyzer(object):
 
 	def checkFlyerName(self, phrase, keyChars):
 		"""Check the phrase for flyer name"""
-		pass
+		return
 
 	# stores keyChar with Levenshtein similarity ratio
 	def checkProductName(self, phrase, keyChars):
@@ -100,19 +103,75 @@ class NLPAnalyzer(object):
 		# pick the most likely product when many phrases match the same
 		if keyChars.product_name is not None:
 			keyChars.product_name = max(keyChars.product_name, default=None, key=keyChars.getMetric)
+		return
 
 
 
-	def checkUPP(self, phrase, keyChars):
-		"""Check the phrase for unit promo price"""
-		# check for dollar
-		key = "\$"
-		currSplit = re.split(key, phrase)
-		# rule out any price from phrase, and focus on percentage tagging
-		if len(currSplit) == 1:
-			key = "\%"
-			currSplit = re.split(key, phrase)
+	def checkDeal(self, phrase, keyChars):
+		"""Check the phrase for deals, costs, etc:
 
+			Price
+				- $
+					- do cents later
+				- "/"
+					- UOM
+					- Least quantity of product
+
+			Discount
+				- % (percentage)
+					- "OFF"
+					- Value from 0-100
+					- UOM
+				- "SAVE"
+					- "UP TO"
+						- Savings Amount (Price)
+					- Savings Amount (Price)
+		"""
+		costFound = False
+		discountFound = False
+		quantityFound = False
+		checkPercent  = False
+		unitsFound = False
+
+		# determine if discount/saving
+		offTag = re.search("off", phrase)
+		saveTag = re.search("save", phrase)
+		if offTag is not None or saveTag is not None:
+			discountFound = True
+		# extract a dollar amount
+		# re.split splits a string into a list with elements seperated at the key
+		keyPos = re.search("\$", phrase)
+		# no dollar sign exists
+		if keyPos is None:
+			# try cents
+			keySplit = re.search("\u00a2", phrase)
+			# no cents amount in phrase
+			if keySplit is None:
+				checkPercent = True
+			else:
+				# extract the cent value from last two numbers
+				centValue = int(phrase[keySplit.start() - 2: keySplit.start()])/100
+				if saveTag is not None:
+
+
+		else:
+			costFound = True
+		# determine cost or check for percentage
+		if costFound:
+			costSplit = re.split(key, phrase)
+			# check for forward slash
+			for e in costSplit:
+				fSlash = re.search("\/", e)
+				if fSlash is not None:
+					# quantity
+					if fSlash.end() == len(e):
+						pass
+					# assume uom
+					else:
+						pass
+				else:
+
+		return
 
 	def checkUOM(self, phrase, keyChars):
 		"""Check the phrase for unit of measurement"""
@@ -125,7 +184,13 @@ class NLPAnalyzer(object):
 				# only append
 				if frequency > 0:
 					keyChars.uom.append((self.metricInventory["units"][i], frequency))
+		return
 
+	def checkOrganic(self, phrase, keyChars):
+		key = "organic"
+		if re.search(key, phrase) is not None:
+			keyChars.organic = 1
+		return
 
 	def voteProductName(self):
 		"""Vote for product name:
@@ -134,11 +199,11 @@ class NLPAnalyzer(object):
 		bestResult = None
 		bestRatio = 0
 		current = 0
-		for i in range(0, len(self.store), 1):
-			if not self.store[i].product_name:
+		for levelChars in self.store:
+			if not levelChars.product_name:
 				continue
-			current = self.store[i].product_name[1]
-			currentHeirachy = self.store[i].dictHeirachy
+			current = levelChars.product_name[1]
+			currentHeirachy = levelChars.dictHeirachy
 			if currentHeirachy == 1:
 				current *= BIAS[4]  # rank = 5, -1 for index
 			elif currentHeirachy == 2:
@@ -151,9 +216,14 @@ class NLPAnalyzer(object):
 				current *= BIAS[3]
 			if current > bestRatio:
 				best = current
-				bestResult = self.store[i].product_name[0]
+				bestResult = levelChars.product_name[0]
 		return bestResult
 
+	def voteOrganic(self):
+		for levelChars in self.store:
+			if levelChars.organic > 0:
+				return 1
+		return 0
 
 
 if __name__ == "__main__":
@@ -161,9 +231,9 @@ if __name__ == "__main__":
 									processing.generateUnitsInventory(),
 									processing.generateDiscountInventory())
 	tp = ({"text": "Whole Chicken Leg Quarters ", "type": 3},
-			{"text": "Leg Quarters $5/lb", "type": 1},
-			{"text": "Whole Chicken Leg", "type": 2},
-			{"text": "BananaMan $45.00", "type": 4})
+			{"text": "$3.00/lb", "type": 1},
+			{"text": "Now dont miss your chance to SAVE $3.54/lb", "type": 2},
+			{"text": "Drink a pancake smoothie with orange lemonade and ostrich juice", "type": 4})
 	results = analyzer.analyze(tp)
-	print(results.product_name)
+	print(results.product_name, results.organic)
 	pass
