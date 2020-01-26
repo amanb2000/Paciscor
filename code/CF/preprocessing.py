@@ -56,8 +56,11 @@ def match_template(image, template):
 
 #only select red pixels to come back
 def get_red(image):
+    # image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
     lower = [0, 0, 100]
     upper = [100, 100, 255]
+
+    print(image)
 
     # create NumPy arrays from the boundaries
     lower = np.array(lower, dtype = "uint8")

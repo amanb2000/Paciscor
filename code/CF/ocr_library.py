@@ -24,6 +24,8 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
 
     raw_img = cv2.imread(path)
 
+    crop_img = raw_img
+
     if(coords):
         crop_img = raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
     else:
@@ -198,9 +200,10 @@ def pre_process_block(path, coords, conf=r'--oem 1 --psm 11', debug=False):
     heat_map = get_map(path, debug = False)
 
     dot_ind = path.index('.')
-    path = path[:dot_ind]
-    path += '.png'
-    path = '../../src/flyers/png' + path
+    #path = path[:dot_ind]
+    #path += '.png'
+    path = '../../src/flyers/png/{}.png'.format(path[len(path)-4:])
+    
 
     list_out = []
 
