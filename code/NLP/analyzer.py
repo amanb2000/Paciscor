@@ -13,15 +13,47 @@ class KeyChars(object):
 
 	def __init__(self, _dictHeirachy):
 		self.dictHeirachy = _dictHeirachy
+		self.payPrice = []
+		self.savePrice = []
 		# all will contain: [(characteristic, distance), ...]
 		self.flyer_name = []  # week_page
 		self.product_name = []  # from product inventory
-		self.unit_promo_price = []  # price per unit
+		self.unit_promo_price = None  # price per unit
 		self.uom = []  # unit of measurement
-		self.least_unit_for_promo = []  # minimum quantity before promotion applies, def=1
+		self.least_unit_for_promo = 1  # minimum quantity before promotion applies, def=1
 		self.save_per_unit = []  # savings per unit
 		self.discount = []  # discount from original price
 		self.organic = 0 # boolean indicating organic (1) or not organic (0), def=0
+
+	def generate_unit_promo_price(self):
+		"""requires the price and the least number of units for promo"""
+		if not isinstance(self.payPrice, float):
+			return
+		self.unit_promo_price = round(self.payPrice/self.least_unit_for_promo, 2)
+
+
+	def generate_save_per_unit(self):
+		"""requires save-price and learn number of units for promo"""
+		if not isinstance(self.savePrice, float):
+			return
+		self.save_per_unit = round(self.savePrice/self.least_unit_for_promo, 2)
+
+	def generate_discount(self):
+		"""requires save per unit and unit promo prices"""
+		if not isinstance(self.unit_promo_price, float) or not isinstance(self.save_per_unit, float):
+			return
+		self.discount = self.save_per_unit/self.unit_promo_price
+
+	def generate_data(self):
+		"""Generates:
+
+			- unit promo price
+			- save per unit
+			- discount in decimal (0 to 1)"""
+			self.generate_unit_promo_price()
+			self.generate_save_per_unit()
+			self.discount()
+
 
 	def getMetric(self, sample):
 		"""ONLY USED BY MAX/MIN/SORTING FUNCTIONS"""
