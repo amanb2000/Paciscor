@@ -200,7 +200,9 @@ def main():
     # Iterate clusters
     func = partial(run_cluster, unrollImg)
     result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
-    
+    POOL.close()
+    POOl.join()
+
     for resultSet in result:
         cluster, trackTime, cntr, u, fpc = resultSet
 
@@ -208,18 +210,18 @@ def main():
         newImg = change_color_fuzzycmeans(u, cntr)
         fuzzyImg = np.reshape(newImg, shape).astype(np.uint8)
 
-        ret, segImg = cv2.threshold(fuzzyImg, np.max(fuzzyImg)-1, 255, cv2.THRESH_BINARY_INV)
+        # ret, segImg = cv2.threshold(fuzzyImg, np.max(fuzzyImg)-1, 255, cv2.THRESH_BINARY_INV)
 
         print('Time for {} clusters: {}'.format(cluster, time() - trackTime))
-        segImg1d = segImg[:,:]
+        # segImg1d = segImg[:,:]
 
-        bwfim1 = bwareaopen(segImg1d, 100)
-        bwfim2 = imclearborder(bwfim1)
-        bwfim3 = imfill(bwfim2)
+        # bwfim1 = bwareaopen(segImg1d, 100)
+        # bwfim2 = imclearborder(bwfim1)
+        # bwfim3 = imfill(bwfim2)
 
-        print('BWArea: {}'.format(bwarea(bwfim3)))
+        # print('BWArea: {}'.format(bwarea(bwfim3)))
 
-        plt.imshow(bwfim3)
+        plt.imshow(newImg)
         plt.title('{} Clusters'.format(cluster))
         plt.savefig('regions_{}_clusters.png'.format(cluster))
 
