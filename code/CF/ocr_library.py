@@ -197,6 +197,11 @@ def is_black(img, left, top, width, height): # for black and white images.
 def pre_process_block(path, coords, conf=r'--oem 1 --psm 11', debug=False):
     heat_map = get_map(path, debug = False)
 
+    dot_ind = path.index('.')
+    path = path[:dot_ind]
+    path += '.png'
+    path = '../../src/flyers/png' + path
+
     list_out = []
 
     for coord in coords:
@@ -287,7 +292,7 @@ def get_heat_density(heat_map, points):
 
 def acceptable_centroid(heat_map, points): # TODO: Get this function done
     # heat map is an OpenCV image and points is a tuple of tuples that consists of a coordinate pair for the top left and bottom right corners.
-    return get_heat_density(heat_map, points) > 20:
+    return get_heat_density(heat_map, points) > 20
 
 
 if __name__ == "__main__":

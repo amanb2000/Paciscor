@@ -101,12 +101,12 @@ def run_cluster(params):
 
 POOL = multiprocessing.Pool(processes=5)
 
-mypath = "/src/flyers/"
+mypath = "../../src/flyers/"
 
-files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+files = [f for f in listdir(mypath) if pt.isfile(pt.join(mypath, f))]
 
-print(files)
-exit()
+# print(files)
+# exit()
 
 tg = 'week_1_page_2.jpg'
 
