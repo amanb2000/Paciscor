@@ -9,9 +9,12 @@ from matplotlib.ticker import PercentFormatter
 
 from pytesseract import Output
 
+from tqdm import tqdm
+
 from preprocessing import *
 
 def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
+    print('Beginning to get data...')
     raw_img = cv2.imread(path)
 
     if(coords):
@@ -33,11 +36,12 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
         cv2.waitKey(0)
 
 
+    print('Getting image data for RGB and red filtered... ')
     s = pytesseract.image_to_string(crop_img, config=conf)
     d = pytesseract.image_to_data(crop_img, output_type=Output.DICT, config=conf)
     r = pytesseract.image_to_data(red_img, output_type=Output.DICT, config=conf)
     rs = pytesseract.image_to_string(red_img, config=conf)
-
+    print('Done getting data!\n')
 
     ret_val = (
         {
@@ -113,31 +117,61 @@ def height_histogram(dict_in):
 
     axs[0].hist(df['height'].to_numpy(), bins=n_bins)
 
-    # axs[1].hist(df['height'].to_numpy(), bins = n_bins)
+    axs[1].hist(df['height'].to_numpy(), bins = n_bins)
 
     plt.show()
 
-    # print(df)
+def get_centers(dict_in, min_conf = 60):
+
+    print('Getting centers...')
+
+    df = pd.DataFrame(dict_in['data'])
+    df = df.astype({'conf':'float32'})
+    df = df[df['conf'] > 60]
+
+    df['center-x'] = df['left'] + df['width']/2
+    df['center-y'] = df['top'] + df['height']/2
+    df['area'] = df['width'] * df['height']
+
+    return df[['center-x', 'center-y', 'area', 'conf']]
+
+def get_blurred_map(df, img, step_size, radius):
+
+    print('Getting blurred map...')
+
+    im_out = img
+    for i in tqdm(range(0, img.shape[0], step_size)):
+        # print(i)
+        for j in range(0, img.shape[1], step_size):
+            # Getting the sum of the confidences where the word is within the given radius:
+
+            cnt = 0
+            for index, row in df.iterrows():
+                if abs(row['center-x']-i) < radius and abs(row['center-y']-j) < radius:
+                    cnt += 1
+
+            cnt *= 10
+            avg_conf = min(cnt, 255)
 
 
-# coords = (
-#     ((245, 779), (967, 1444)),
-#     ((1100, 444), (1900, 947))
-# )
+            im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
 
-coords = (
-    ((199, 1240), (771, 2222)),
-    ((757, 1240), (1480, 1784)),
-    ((771, 1815), (1835, 2210)),
-    ((1835, 1705), (2344, 2222)),
-    ((2344, 1222), (3130, 1798))
-)
+    return im_out
 
-for i in coords:
-    # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
-    tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
+if __name__ == "__main__":
+    coords = (
+        ((199, 1240), (771, 2222)),
+        ((757, 1240), (1480, 1784)),
+        ((771, 1815), (1835, 2210)),
+        ((1835, 1705), (2344, 2222)),
+        ((2344, 1222), (3130, 1798))
+    )
 
-    print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
-    visualize_results(tuple_out[0])
-    print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
-    visualize_results(tuple_out[1])
+    for i in coords:
+        # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
+        tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
+
+        print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
+        visualize_results(tuple_out[0])
+        print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
+        visualize_results(tuple_out[1])
