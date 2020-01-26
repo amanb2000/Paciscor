@@ -201,7 +201,7 @@ def main():
     func = partial(run_cluster, unrollImg)
     result = POOL.map(func, [x for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
     POOL.close()
-    POOl.join()
+    POOL.join()
 
     for resultSet in result:
         cluster, trackTime, cntr, u, fpc = resultSet
@@ -220,9 +220,10 @@ def main():
         # bwfim3 = imfill(bwfim2)
 
         # print('BWArea: {}'.format(bwarea(bwfim3)))
+        for pt in cntr:
+            plt.plot(pt[0], pt[1], 'rs')
 
-        plt.imshow(newImg)
-        plt.title('{} Clusters'.format(cluster))
+        plt.title('{} Clusters, FPC: {}'.format(cluster, fpc))
         plt.savefig('regions_{}_clusters.png'.format(cluster))
 
     print("Done! Best cluster number for flyer is {}".format(2))
