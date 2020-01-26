@@ -15,8 +15,8 @@ COLORS = [[149, 255, 192], [58, 50, 31], [18, 205, 41], [55, 29, 86], [13, 171, 
 ACCURACY = 0.1
 MAX_ITERATIONS = 100
 MAX_TRIALS = 20
-LOWEST_CLUSTERS = 3
-HIGHEST_CLUSTERS = 3
+LOWEST_CLUSTERS = 10
+HIGHEST_CLUSTERS = 20
 TARGET_COMPAT = 27000000
 
 def read_image(target):
@@ -37,8 +37,9 @@ def read_image(target):
     return invImg, np.array(mappedImg), (height, width)
 
 
+tg = 'week_1_page_1.jpg'
 
-image = read_image('week_1_page_1.jpg')
+image = read_image(tg)
 
 pixel_values = image[1].reshape((-1, 2))
 pixel_values = np.float32(pixel_values)
@@ -83,7 +84,7 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
         # plt.show()
 
     # Save
-    plt.savefig('new_plot_K_{}_compat_{}.png'.format(clusters, int(compat)))
+    plt.savefig('{}__K_{}_compat_{}.png'.format(tg, clusters, int(compat)))
 
     # Compare for best clustering
     if currentBest[1] is None or abs(TARGET_COMPAT - compat) < currentBest[1]:

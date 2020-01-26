@@ -1,5 +1,13 @@
 # Optical Character Recognition
 
+## Most Important Functions
+* `ocr_library.py -> process_block(path, coord, conf=r'--oem 1 --psm 11', debug=False)`:
+  * Takes in the path to an image (png) and a coordinate pair for the top left/bottom right corners and spits out the tuple of 3 dictionaries that are described at length at the bottom of the document (contains information on the text in each heading/body type).
+* `cluster_via_ocr.py -> get_map(path, debug = False, step_size = 50, radius = 100)`:
+  * Takes the path to a file and optionally some hyperparameters in order to produce a heat map representing local text concentration. Used for evaluating 
+  the goodness of a given `ad block` centroid.
+
+
 ## Tasks
 
 * [x] Create personal virtual environment.

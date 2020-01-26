@@ -3,6 +3,7 @@ import pytesseract
 import numpy as np
 import pandas as pd
 import json
+import math
 
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -12,10 +13,13 @@ from pytesseract import Output
 
 from tqdm import tqdm
 
+
 from preprocessing import *
 
 def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
-    print('Beginning to get data...')
+    if(debug):
+        print('\nBeginning to get data for {}...'.format(path))
+
     raw_img = cv2.imread(path)
 
     if(coords):
@@ -27,24 +31,21 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
 
     red_img = get_red(red_img)
 
-    # red_data = get_red_data(red_img)
-
     crop_img = get_grayscale(crop_img)
     crop_img = thresholding(crop_img)
 
-    if debug:
-        cv2.imshow("Red image", red_img)
-        cv2.waitKey(0)
+    if(debug):
+        print('Processing image data for RGB and red filtered image with OpenCV... ')
 
-
-    print('Getting image data for RGB and red filtered... ')
     s = pytesseract.image_to_string(crop_img, config=conf)
     d = pytesseract.image_to_data(crop_img, output_type=Output.DICT, config=conf)
     r = pytesseract.image_to_data(red_img, output_type=Output.DICT, config=conf)
     rs = pytesseract.image_to_string(red_img, config=conf)
-    print('Done getting data!\n')
 
-    # ret_image = raw_img # UNCOMMENT ME TO HAVE ACCESS TO IMAGE DATA
+    if(debug):
+        print('Done getting data!\n')
+
+    ret_image = raw_img # UNCOMMENT ME TO HAVE ACCESS TO IMAGE DATA
 
     if coords:
         ret_image = raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
@@ -64,7 +65,7 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
         }
     )
 
-    return(ret_val)
+    return ret_image, ret_val
 
 def visualize_results(dict_in):
     img = dict_in['image']
@@ -109,24 +110,6 @@ def visualize_results(dict_in):
     cv2.imshow(name, img)
     cv2.waitKey(0)
 
-def height_histogram(dict_in):
-    df = pd.DataFrame(dict_in['data'])
-
-    fig, axs = plt.subplots(1, 2, sharey=True, tight_layout=True)
-    n_bins = 50
-    max_height = 50
-
-    trimmed_df = df[df['height'] < max_height]
-    # trimmed_df = trimmed_df[trimmed_df['height'] < 625]
-
-    df = trimmed_df
-
-    axs[0].hist(df['height'].to_numpy(), bins=n_bins)
-
-    axs[1].hist(df['height'].to_numpy(), bins = n_bins)
-
-    plt.show()
-
 def get_centers(dict_in, min_conf = 60):
 
     print('Getting centers...')
@@ -145,81 +128,50 @@ def get_blurred_map(df, img, step_size, radius):
 
     print('Getting blurred map...')
 
-    im_out = img
-    for i in tqdm(range(0, img.shape[0], step_size)):
+    im_out = get_grayscale(img)
+
+    max_cnt = 0
+    for j in tqdm(range(0, img.shape[0], step_size)):
         # print(i)
-        for j in range(0, img.shape[1], step_size):
+        for i in range(0, img.shape[1], step_size):
             # Getting the sum of the confidences where the word is within the given radius:
 
             cnt = 0
             for index, row in df.iterrows():
                 if abs(row['center-x']-i) < radius and abs(row['center-y']-j) < radius:
-                    cnt += 1
+                    dist = math.sqrt(abs(row['center-x']-i)**2 + abs(row['center-y']-j)**2)
+                    cnt += 10/dist
 
-            cnt *= 20
+            if cnt > max_cnt:
+                max_cnt = cnt
+
+            cnt *= 180
             avg_conf = min(cnt, 255)
 
 
             # im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
 
-            for k in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[0]) ):
-                for l in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[1]) ):
-                    im_out[k][l] = (0, 0, avg_conf)
+            for l in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[1]) ):
+                for k in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[0]) ):
+                    im_out[k][l] = avg_conf
 
-    im_out = get_grayscale(im_out)
+    print('Maximum count was {}'.format(max_cnt))
 
     img = get_grayscale(img)
+
+    # im_out = thresholding(im_out)
     print('Done getting blurred map.')
     print('Applying blurred map to pre-existing image for reference...')
 
-    for i in tqdm(range(0, img.shape[0])):
-        for j in range(0, img.shape[1]):
-            im_out[i][j] *= min(min(255, int(im_out[i][j]*2)), int(img[i][j]))
+    im_out = cv2.addWeighted(im_out,0.5,img,0.5,0)
     
     print('Done!')
 
     return im_out
 
-def get_avg_coloured_pixel(img, left, top, width, height):
-    # This function acquires the value of the average non-white pixel within the specified values.
-
-    avg_red = 0
-    avg_blue = 0
-    avg_green = 0
-
-    area = 1
-
-    for j in range(left, left+width):
-        for i in range(top, top+height):
-            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
-                avg_red += img[i][j][2]
-                avg_green += img[i][j][1]
-                avg_blue += img[i][j][0]
-                area += 1
-
-
-
-    avg_red /= area
-    avg_blue /= area
-    avg_green /= area
-
-    overall_avg = avg_red + avg_green + avg_blue
-    overall_avg /= 2.0
-
-    return(overall_avg)
-
-def get_percent_coloured(img, left, top, width, height):
-    area = 0
-
-    for j in range(left, left+width):
-        for i in range(top, top+height):
-            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
-                area += 1
-
-    total_area = float(width * height)
-    return((area*100.0)/total_area)
-
 def is_black(img, left, top, width, height): # for black and white images.
+
+    im2 = get_grayscale(img)
 
     cutoff = 25
     min_pixels = 3
@@ -227,6 +179,8 @@ def is_black(img, left, top, width, height): # for black and white images.
     for j in range(left, left+width):
         for i in range(top, top+height):
             if im2[i][j] > cutoff:
+                im2[i][j] = 255
+            elif img[i][j][2]-img[i][j][1] > 40: # TODO: Check this to make sure it works
                 im2[i][j] = 255
 
     cnt = 0
@@ -240,16 +194,70 @@ def is_black(img, left, top, width, height): # for black and white images.
         return True
     return False
 
+# Final function for OCRing a given block specified by a path to an image and a tuple of tuples representing the coordinates.
 def process_block(path, coord, conf=r'--oem 1 --psm 11', debug=False):
-    twople = get_data(path, coords = coord, conf = conf)
+    im2, twople = get_data(path, coords = coord, conf = conf, debug = debug)
 
-    # Now we need to, based on the `is_black` function output.
+    # Now we need to create our dict of grey matter, based on the `is_black` function output.
+    third_dict = {
+        'text': 'null',
+        'type': 3
+    }
 
+    greys = twople[1]['data']
 
+    if debug:
+        print('\n\n')
+        print('Processing grey headings')
+        print('\n')
 
+    for j in range(len(greys['level'])):
+        if debug: 
+            print('{}/{}'.format(j, len(greys['level'])))
+        if(j >= len(greys['level'])):
+            break
+
+        word = greys['text'][j]
+        left = greys['left'][j]
+        top = greys['top'][j]
+        width = greys['width'][j]
+        height = greys['height'][j]
+
+        if word.strip() != '':
+            black = is_black(im2, left, top, width, height)
+
+            if black:
+                greys['level'].pop(j)
+                greys['page_num'].pop(j)
+                greys['block_num'].pop(j)
+                greys['par_num'].pop(j)
+                greys['line_num'].pop(j)
+                greys['word_num'].pop(j)
+                greys['left'].pop(j)
+                greys['top'].pop(j)
+                greys['width'].pop(j)
+                greys['height'].pop(j)
+                greys['conf'].pop(j)
+                greys['text'].pop(j)
+                j -= 1
+
+            # img = cv2.rectangle(img, (left, top), (left + width, top+height), (0, 0, 255), 2)
+    
+
+    third_dict['data'] = greys
+    list_out = list(twople)
+    list_out += [third_dict]
+
+    return tuple(list_out)
 
 
 if __name__ == "__main__":
+    a = process_block('py-testing/week_24_page_1.png', ((199, 1240), (771, 2222)), conf=r'--oem 1 --psm 11', debug=False)
+
+    app_json = json.dumps(a)
+    print(app_json)
+
+def heck():
     coords = (
         ((199, 1240), (771, 2222)),
         ((757, 1240), (1480, 1784)),
