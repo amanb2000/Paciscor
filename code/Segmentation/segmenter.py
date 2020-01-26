@@ -88,7 +88,7 @@ def main():
         print(centers)
 
         for pt in cntr:
-            plt.plot(pt[0], pt[1], pt[2], 'rs')
+            plt.plot(pt[0], pt[1], pt[2], 'rs', projection='3d')
 
         plt.title('{} Clusters, FPC: {}'.format(cluster, fpc))
         plt.savefig('regions_{}_clusters.png'.format(cluster))
