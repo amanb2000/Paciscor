@@ -22,10 +22,14 @@ def read_image(target):
     img = cv2.imread(path, 0)
     height, width = img.shape
     # Unroll image into intensity
-    unrollImg = img.reshape((height * width), 1)
+    # unrollImg = img.reshape((height * width), 3)
     # Invert
-    invImg = cv2.bitwise_not(unrollImg)
-    return invImg, (height, width)
+    invImg = cv2.bitwise_not(img)
+    mappedImg = np.empty((height * width, 3))
+    for i in range(0, height, 1):
+        for j in range(0, width, 1):
+            mappedImg[i*width + j] = [i, j, invImg[i,j]]
+    return mappedImg, (height, width)
 
 def change_color_fuzzycmeans(cluster_membership, clusters):
     img = []
@@ -48,7 +52,7 @@ def main():
     srcImg, dimensions = read_image('week_1_page_1.jpg')
 
     # initialize graph
-    plt.figure(figsize=(20,20))
+    # plt.figure(figsize=(20,20))
     # img = srcImg.reshape(dimensions[0], dimensions[1])
     # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
     # plt.savefig('blacked')
