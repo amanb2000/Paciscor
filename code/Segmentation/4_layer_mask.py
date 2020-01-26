@@ -25,26 +25,26 @@ image = read_image('week_1_page_1.jpg')
 
 pixel_values = image[0].reshape((-1, 2))
 pixel_values = np.float32(pixel_values)
-print(pixel_values.shape)
+# print(pixel_values.shape)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-k = 15
+k = 2
 
 _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
 # convert back to 8 bit values
 print(centers)
 
-centers = np.uint8(centers)
+centers = np.int16(centers)
 
 print(centers)
 
 # flatten the labels array
-print(labels)
+# print(labels)
 
 labels = labels.flatten()
 
-print(labels)
+# print(labels)
 
 # segmented_image = centers[labels.flatten()]
 
