@@ -11,30 +11,28 @@ from pytesseract import Output
 from tqdm import tqdm
 
 from preprocessing import *
-from ocr_script import *
+from ocr_library import *
 
+
+
+
+def get_map(path, debug = False, step_size = 50, radius = 100):
+    print('\n\nStarting blurred map OCR process... \n\n')
+
+    img, dict_in = get_data(path, conf=r'--oem 1 --psm 11', debug=debug) # No coordinates given because we are analyzing the entire picture.
+    
+    df = get_centers(dict_in[1]) # Getting the central coordinates of every single word (along with the confidene and dimensions of the bounding box).
+
+    im_out = get_blurred_map(df, img, step_size, radius)
+    
+    return im_out
+
+def goodness_of_centroids(heat_map, points):
+    # heat map is an OpenCV image and points is 
 
 
 if __name__ == '__main__':
-    print('\n\nStarting blurred map acquisition process... \n\n')
-    dict_in = get_data('py-testing/week_24_page_1.png')[1]
-    
-    df = get_centers(dict_in)
+    a = get_centroids('py-testing/week_24_page_1.png', debug = True)
 
-    img = dict_in['image']
-
-    img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
-
-    cnt = 0
-
-    im_out = get_blurred_map(df, img, 100, 200)
-
-    
-
-
-
-    cv2.imshow('Test Rectangles', im_out)
+    cv2.imshow('Centroid Test', a)
     cv2.waitKey(0)
-
-
-

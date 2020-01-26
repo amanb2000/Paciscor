@@ -3,6 +3,7 @@ import pytesseract
 import numpy as np
 import pandas as pd
 import json
+import math
 
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -11,6 +12,7 @@ from matplotlib.ticker import PercentFormatter
 from pytesseract import Output
 
 from tqdm import tqdm
+
 
 from preprocessing import *
 
@@ -126,36 +128,42 @@ def get_blurred_map(df, img, step_size, radius):
 
     print('Getting blurred map...')
 
-    im_out = img
-    for i in tqdm(range(0, img.shape[0], step_size)):
+    im_out = get_grayscale(img)
+
+    max_cnt = 0
+    for j in tqdm(range(0, img.shape[0], step_size)):
         # print(i)
-        for j in range(0, img.shape[1], step_size):
+        for i in range(0, img.shape[1], step_size):
             # Getting the sum of the confidences where the word is within the given radius:
 
             cnt = 0
             for index, row in df.iterrows():
                 if abs(row['center-x']-i) < radius and abs(row['center-y']-j) < radius:
-                    cnt += 1
+                    dist = math.sqrt(abs(row['center-x']-i)**2 + abs(row['center-y']-j)**2)
+                    cnt += 10/dist
 
-            cnt *= 20
+            if cnt > max_cnt:
+                max_cnt = cnt
+
+            cnt *= 180
             avg_conf = min(cnt, 255)
 
 
             # im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
 
-            for k in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[0]) ):
-                for l in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[1]) ):
-                    im_out[k][l] = (0, 0, avg_conf)
+            for l in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[1]) ):
+                for k in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[0]) ):
+                    im_out[k][l] = avg_conf
 
-    im_out = get_grayscale(im_out)
+    print('Maximum count was {}'.format(max_cnt))
 
     img = get_grayscale(img)
+
+    # im_out = thresholding(im_out)
     print('Done getting blurred map.')
     print('Applying blurred map to pre-existing image for reference...')
 
-    for i in tqdm(range(0, img.shape[0])):
-        for j in range(0, img.shape[1]):
-            im_out[i][j] *= min(min(255, int(im_out[i][j]*2)), int(img[i][j]))
+    im_out = cv2.addWeighted(im_out,0.5,img,0.5,0)
     
     print('Done!')
 
