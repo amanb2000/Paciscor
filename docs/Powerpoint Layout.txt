@@ -1,0 +1,13 @@
+Powerpoint Layout:
+
+1: About us + background
+
+2: Strategy (design process and categories of tasks)
+
+3: Segmentation
+
+4: OCR
+
+5: NLP
+
+6: Bringing it all together (OCR => Segmentation => OCR => ...)
