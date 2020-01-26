@@ -9,9 +9,12 @@ from matplotlib.ticker import PercentFormatter
 
 from pytesseract import Output
 
+from tqdm import tqdm
+
 from preprocessing import *
 
 def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
+    print('Beginning to get data...')
     raw_img = cv2.imread(path)
 
     if(coords):
@@ -33,24 +36,25 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
         cv2.waitKey(0)
 
 
+    print('Getting image data for RGB and red filtered... ')
     s = pytesseract.image_to_string(crop_img, config=conf)
     d = pytesseract.image_to_data(crop_img, output_type=Output.DICT, config=conf)
     r = pytesseract.image_to_data(red_img, output_type=Output.DICT, config=conf)
     rs = pytesseract.image_to_string(red_img, config=conf)
-
+    print('Done getting data!\n')
 
     ret_val = (
         {
             'text': rs,
             'type': 1,
             'data': r,
-            'image': red_img
+            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
         },
         {
             'text': s,
             'type': 2,
             'data': d,
-            'image': crop_img
+            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
         }
     )
 
@@ -113,31 +117,134 @@ def height_histogram(dict_in):
 
     axs[0].hist(df['height'].to_numpy(), bins=n_bins)
 
-    # axs[1].hist(df['height'].to_numpy(), bins = n_bins)
+    axs[1].hist(df['height'].to_numpy(), bins = n_bins)
 
     plt.show()
 
-    # print(df)
+def get_centers(dict_in, min_conf = 60):
+
+    print('Getting centers...')
+
+    df = pd.DataFrame(dict_in['data'])
+    df = df.astype({'conf':'float32'})
+    df = df[df['conf'] > 60]
+
+    df['center-x'] = df['left'] + df['width']/2
+    df['center-y'] = df['top'] + df['height']/2
+    df['area'] = df['width'] * df['height']
+
+    return df[['center-x', 'center-y', 'area', 'conf']]
+
+def get_blurred_map(df, img, step_size, radius):
+
+    print('Getting blurred map...')
+
+    im_out = img
+    for i in tqdm(range(0, img.shape[0], step_size)):
+        # print(i)
+        for j in range(0, img.shape[1], step_size):
+            # Getting the sum of the confidences where the word is within the given radius:
+
+            cnt = 0
+            for index, row in df.iterrows():
+                if abs(row['center-x']-i) < radius and abs(row['center-y']-j) < radius:
+                    cnt += 1
+
+            cnt *= 20
+            avg_conf = min(cnt, 255)
 
 
-# coords = (
-#     ((245, 779), (967, 1444)),
-#     ((1100, 444), (1900, 947))
-# )
+            # im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
 
-coords = (
-    ((199, 1240), (771, 2222)),
-    ((757, 1240), (1480, 1784)),
-    ((771, 1815), (1835, 2210)),
-    ((1835, 1705), (2344, 2222)),
-    ((2344, 1222), (3130, 1798))
-)
+            for k in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[0]) ):
+                for l in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[1]) ):
+                    im_out[k][l] = (0, 0, avg_conf)
 
-for i in coords:
-    # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
-    tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
+    im_out = get_grayscale(im_out)
 
-    print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
-    visualize_results(tuple_out[0])
-    print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
-    visualize_results(tuple_out[1])
+    img = get_grayscale(img)
+    print('Done getting blurred map.')
+    print('Applying blurred map to pre-existing image for reference...')
+
+    for i in tqdm(range(0, img.shape[0])):
+        for j in range(0, img.shape[1]):
+            im_out[i][j] *= min(min(255, int(im_out[i][j]*2)), int(img[i][j]))
+    
+    print('Done!')
+
+    return im_out
+
+def get_avg_coloured_pixel(img, left, top, width, height):
+    # This function acquires the value of the average non-white pixel within the specified values.
+
+    avg_red = 0
+    avg_blue = 0
+    avg_green = 0
+
+    area = 1
+
+    for i in range(left, min(left+width, img.shape[0])):
+        for j in range(top, min(top+height, img.shape[1])):
+            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
+                avg_red += img[i][j][2]
+                avg_green += img[i][j][1]
+                avg_blue += img[i][j][0]
+                area += 1
+
+
+
+    avg_red /= area
+    avg_blue /= area
+    avg_green /= area
+
+    return((avg_blue, avg_green, avg_red))
+
+def get_percent_coloured(img, left, top, width, height):
+    area = 0
+
+    for i in range(left, min(left+width, img.shape[0])):
+        for j in range(top, min(img.shape[1], top+height)):
+            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
+                area += 1
+
+    total_area = float(width * height)
+    return(area/total_area)
+
+if __name__ == "__main__":
+    coords = (
+        ((199, 1240), (771, 2222)),
+        ((757, 1240), (1480, 1784)),
+        ((771, 1815), (1835, 2210)),
+        ((1835, 1705), (2344, 2222)),
+        ((2344, 1222), (3130, 1798))
+    )
+
+    for i in coords:
+        # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
+        tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
+
+        # print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
+        # visualize_results(tuple_out[0])
+        # print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
+        # visualize_results(tuple_out[1])
+
+        # print(tuple_out[1]['data'])
+
+        img = tuple_out[1]['image']
+
+        cv2.imshow("Image Output", img)
+        cv2.waitKey(0)
+
+
+        for j in range(len(tuple_out[1]['data'])):
+            word = tuple_out[1]['data']['text'][j]
+            left = tuple_out[1]['data']['left'][j]
+            top = tuple_out[1]['data']['top'][j]
+            width = tuple_out[1]['data']['width'][j]
+            height = tuple_out[1]['data']['height'][j]
+
+
+            avg_color = get_avg_coloured_pixel(img, left, top, width, height)
+            percent = get_percent_coloured(img, left, top, width, height)
+
+            print('Word: {} \tAverage Colour: {} \tPercent Coloured: {}'.format(word, avg_color, percent))
