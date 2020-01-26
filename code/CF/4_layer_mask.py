@@ -108,39 +108,41 @@ files = [f for f in listdir(mypath) if pt.isfile(pt.join(mypath, f))]
 # print(files)
 # exit()
 
-tg = 'week_1_page_2.jpg'
+for tg in files:
 
-image = read_image(tg)
+    # tg = 'week_1_page_2.jpg'
 
-pixel_values = image[1].reshape((-1, 2))
-pixel_values = np.float32(pixel_values)
+    image = read_image(tg)
 
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
+    pixel_values = image[1].reshape((-1, 2))
+    pixel_values = np.float32(pixel_values)
 
-result = POOL.map(run_cluster, [{'fname': tg, 'src': image, 'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
-POOL.close()
-POOL.join()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, MAX_ITERATIONS, ACCURACY)
 
-currentBest = [0, None, None]
+    result = POOL.map(run_cluster, [{'fname': tg, 'src': image, 'img': pixel_values, 'criteria': criteria, 'clusters': x, 'CONSTANTS': (MAX_TRIALS, COLORS)} for x in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1)])
+    POOL.close()
+    POOL.join()
 
-for resultSet in result:
-    # Compare for best clustering
-    if currentBest[1] is None or abs(TARGET_COMPAT - resultSet[1]) < currentBest[1]:
-        currentBest = [resultSet[0], abs(TARGET_COMPAT - resultSet[1]), resultSet[2]]
+    currentBest = [0, None, None]
 
-
-results = pre_process_block(tg, resultSet[2][2])
-
-Analyzer = NLP_Analyzer(processing.generateProductInventory(),
-									processing.generateUnitsInventory(),
-									processing.generateDiscountInventory())
+    for resultSet in result:
+        # Compare for best clustering
+        if currentBest[1] is None or abs(TARGET_COMPAT - resultSet[1]) < currentBest[1]:
+            currentBest = [resultSet[0], abs(TARGET_COMPAT - resultSet[1]), resultSet[2]]
 
 
-f = open("data.csv", 'w')
+    results = pre_process_block(tg, resultSet[2][2])
 
-for meow in results:
-    row = Analyzer.analyze(meow)
-    f.write(tg[len(tg)-4:] + row)
+    Analyzer = NLP_Analyzer(processing.generateProductInventory(),
+                                        processing.generateUnitsInventory(),
+                                        processing.generateDiscountInventory())
 
-f.close()
+
+    f = open("data.csv", 'w')
+
+    for meow in results:
+        row = Analyzer.analyze(meow)
+        f.write(tg[len(tg)-4:] + row)
+
+    f.close()
 
