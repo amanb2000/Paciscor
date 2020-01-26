@@ -9,6 +9,8 @@ import os.path as pt
 import multiprocessing
 from time import time
 
+from os import listdir
+
 from ocr_library import *
 from analyzer import *
 
@@ -98,6 +100,13 @@ def run_cluster(params):
     return clusters, compat, (labels, centers, tuple(boxes))
 
 POOL = multiprocessing.Pool(processes=5)
+
+mypath = "/src/flyers/"
+
+files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+
+print(files)
+exit()
 
 tg = 'week_1_page_2.jpg'
 
