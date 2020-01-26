@@ -6,15 +6,21 @@
 * [x] Get initial `Tesseract` OCR working in python and producing text ([google repo](https://github.com/tesseract-ocr/tesseract), [examples](https://github.com/nikhilkumarsingh/tesseract-python), [tutorial](https://nanonets.com/blog/ocr-with-tesseract/#introduction))
 * [x] Create a barebones OCR processing function to get started.
 * [x] Find bounding box information (if possible) within the OCR processing function.
-* [ ] Implement pre-processing pipeline to optimize results.
+* [x] Implement pre-processing pipeline to optimize results.
 * [ ] Differentiate sections based on `color`.
-
-### Depreciated Tasks
-
-* [ ] Add font size to export.
-* [ ] Add average pixel darkness to export (surrogate for bolded/non-bolded).
+* [ ] Differentiate sections based on `size`.
+  * [ ] Create histogram of sizes to determine which is what.
 
 ## Notes on Implementation
+
+### Sizing Diagnostics for Line Heights
+
+* < 16 : Green
+* [16:30] : Red
+* [30:38] : Blue
+* [38:45] : Purple
+* [45:90] : Orange
+* > 90 : Pastel
 
 ### Testing and Command Line Notes
 

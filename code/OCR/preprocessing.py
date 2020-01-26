@@ -56,16 +56,22 @@ def match_template(image, template):
 
 #only select red pixels to come back
 def get_red(image):
-    print("From GET RED: ")
+    lower = [0, 0, 100]
+    upper = [100, 100, 255]
 
-    # image[:, :, 1] = 0
-    # image[:, :, 2] = 0
+    # create NumPy arrays from the boundaries
+    lower = np.array(lower, dtype = "uint8")
+    upper = np.array(upper, dtype = "uint8")
 
-    img2 = get_grayscale(image)
+    # find the colors within the specified boundaries and apply
+    # the mask
+    mask = cv2.inRange(image, lower, upper)
+    output = cv2.bitwise_and(image, image, mask = mask)
 
-    for i in range(0, image.shape[0]):
-        for j in range(0, image.shape[1]):
-            img2[i][j] = 256-image[i][j][1]
-            
-    
-    return image
+    output = get_grayscale(output)
+
+    output = cv2.threshold(output, 30, 255, cv2.THRESH_BINARY_INV)[1]
+
+    # output = canny(output)
+
+    return output
