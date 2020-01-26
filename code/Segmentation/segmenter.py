@@ -79,7 +79,10 @@ def main():
         # for i in newImg:
         #     plt.plot(i[0], i[1], '.', color='b')
 
-        print(cntr)
+        centers = np.uint8(cntr)
+
+        print(centers)
+
         for pt in cntr:
             plt.plot(pt[0], pt[1], 'rs')
 
