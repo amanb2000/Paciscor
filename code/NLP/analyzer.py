@@ -20,9 +20,9 @@ class Product(object):
 		self.flyer_name = 'No_name'  # week_page
 		self.product_name = ''  # from product inventory
 		self.unit_promo_price = None  # price per unit
-		self.uom = ''  # unit of measurement
+		self.uom = None  # unit of measurement
 		self.least_unit_for_promo = 1  # minimum quantity before promotion applies, def=1
-		self.save_per_unit = 0  # savings per unit
+		self.save_per_unit = None  # savings per unit
 		self.discount = 0  # discount from original price
 		self.organic = 0 # boolean indicating organic (1) or not organic (0), def=0
 
@@ -150,11 +150,12 @@ class NLP_Analyzer(object):
 
 	def find_price_data(self, content):
 		others = []
+		driving = None
 		for seg in content:
 			# Correct characters!
 			src = re.sub('°', '¢', seg['text'])
 			# Begin
-			nums = re.findall('[^ &^\n]*[0-9]+[^ &^\n]*', src)
+			nums = re.findall('[^ &^\n]*[0-9.]+[^ &^\n]*', src)
 			valuables = []
 			for inst in nums:
 				# Filter instances (special rules)
@@ -164,7 +165,7 @@ class NLP_Analyzer(object):
 				data = inst
 				# Run before check
 				while True:
-					new_data = re.findall('(?:save|\$)[ |\n]*{}+'.format(data), src, re.IGNORECASE)
+					new_data = re.findall('(?:save|\$|on)[ |\n]*{}+'.format(data), src, re.IGNORECASE)
 					if new_data is None or len(new_data) < 1:
 						break
 					else:
@@ -190,11 +191,32 @@ class NLP_Analyzer(object):
 					others += [data]
 		# Evaluate data
 		# Begin with driving
-		unit = re.findall('{}'.format(self.UNITS_STR))
-		if unit is None or len(unit) < 1:
-			
-		print(driving)
-		print(others)
+		if driving is not None:
+			unit = re.findall('{}'.format(self.UNITS_STR), driving)
+			vals = re.findall('[^ &^\n]*[0-9]+[^ &^\n]*', driving)
+			val = int(vals[0]) if len(vals) < 2 else int(vals[1]) # Misses cases where we have 2/$7
+			self.payPrice = val/100
+			if unit is not None and len(unit) > 0:
+				self.uom = unit[0]
+			elif len(vals) > 1:
+				self.uom = 'units'
+		# Compute others
+		for i in others:
+			unit = re.findall('{}'.format(self.UNITS_STR), i)
+			if unit is not None and len(unit) > 0 and self.uom is not None:
+				self.uom = i
+			# Check deal
+			deal = re.findall('save', i, re.IGNORECASE)
+			if deal is not None and len(deal) > 0 and self.save_per_unit is None:
+				val = re.findall('[^ &^\n]*[0-9]+[^ &^\n]*', i)
+				savings = float(val[0]) if len(val) < 2 else float(val[0])/100
+				for i in others:
+					onT = re.findall('on', i, re.IGNORECASE)
+					if onT is not None and len(onT) > 0:
+						num = int(re.findall('[0-9]', i)[0])
+						self.save_per_unit = savings / num
+				if self.save_per_unit is None:
+					self.save_per_unit = savings
 		return
 
 	def check_deal(self, phrase, keyChars):
