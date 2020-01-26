@@ -42,7 +42,7 @@ def run_cluster(targetImg, cluster):
     trackTime = time()
 
     cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(targetImg.T, cluster, 2, error=ALLOWED_ERROR, 
-                                                    maxiter=MAX_ITERATIONS, init=None, seed=42)
+                                                    maxiter=MAX_ITERATIONS, seed=42)
 
     return cluster, trackTime, cntr, u, fpc
 
