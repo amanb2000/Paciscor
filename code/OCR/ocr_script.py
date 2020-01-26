@@ -48,13 +48,13 @@ def get_data(path: str, coords=False, conf=r'--oem 1 --psm 11', debug=False):
             'text': rs,
             'type': 1,
             'data': r,
-            'image': red_img
+            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
         },
         {
             'text': s,
             'type': 2,
             'data': d,
-            'image': crop_img
+            'image': raw_img[coords[0][1]:coords[1][1], coords[0][0]:coords[1][0]]
         }
     )
 
@@ -150,13 +150,65 @@ def get_blurred_map(df, img, step_size, radius):
                 if abs(row['center-x']-i) < radius and abs(row['center-y']-j) < radius:
                     cnt += 1
 
-            cnt *= 10
+            cnt *= 20
             avg_conf = min(cnt, 255)
 
 
-            im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
+            # im_out = cv2.rectangle(im_out, (i, j), (i+step_size, j + step_size), (0, 0, avg_conf), int(step_size/3))
+
+            for k in range(max(0, int(i-step_size/2)), min(int(i+step_size/2), img.shape[0]) ):
+                for l in range(max(0, int(j-step_size/2)), min(int(j+step_size/2), img.shape[1]) ):
+                    im_out[k][l] = (0, 0, avg_conf)
+
+    im_out = get_grayscale(im_out)
+
+    img = get_grayscale(img)
+    print('Done getting blurred map.')
+    print('Applying blurred map to pre-existing image for reference...')
+
+    for i in tqdm(range(0, img.shape[0])):
+        for j in range(0, img.shape[1]):
+            im_out[i][j] *= min(min(255, int(im_out[i][j]*2)), int(img[i][j]))
+    
+    print('Done!')
 
     return im_out
+
+def get_avg_coloured_pixel(img, left, top, width, height):
+    # This function acquires the value of the average non-white pixel within the specified values.
+
+    avg_red = 0
+    avg_blue = 0
+    avg_green = 0
+
+    area = 1
+
+    for i in range(left, min(left+width, img.shape[0])):
+        for j in range(top, min(top+height, img.shape[1])):
+            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
+                avg_red += img[i][j][2]
+                avg_green += img[i][j][1]
+                avg_blue += img[i][j][0]
+                area += 1
+
+
+
+    avg_red /= area
+    avg_blue /= area
+    avg_green /= area
+
+    return((avg_blue, avg_green, avg_red))
+
+def get_percent_coloured(img, left, top, width, height):
+    area = 0
+
+    for i in range(left, min(left+width, img.shape[0])):
+        for j in range(top, min(img.shape[1], top+height)):
+            if img[i][j][0] < 250 or img[i][j][1] < 250 or img[i][j][2] < 250:
+                area += 1
+
+    total_area = float(width * height)
+    return(area/total_area)
 
 if __name__ == "__main__":
     coords = (
@@ -171,7 +223,28 @@ if __name__ == "__main__":
         # tuple_out = get_data('py-testing/week_10_page_2.png', debug=False, coords = i)
         tuple_out = get_data('py-testing/week_24_page_1.png', debug=False, coords = i)
 
-        print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
-        visualize_results(tuple_out[0])
-        print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
-        visualize_results(tuple_out[1])
+        # print('\n===DISPLAYING PROCESSED RED CHANNEL===\n')
+        # visualize_results(tuple_out[0])
+        # print('\n===DISPLAYING OVERALL PROCESSED BLACK TEXT===\n')
+        # visualize_results(tuple_out[1])
+
+        # print(tuple_out[1]['data'])
+
+        img = tuple_out[1]['image']
+
+        cv2.imshow("Image Output", img)
+        cv2.waitKey(0)
+
+
+        for j in range(len(tuple_out[1]['data'])):
+            word = tuple_out[1]['data']['text'][j]
+            left = tuple_out[1]['data']['left'][j]
+            top = tuple_out[1]['data']['top'][j]
+            width = tuple_out[1]['data']['width'][j]
+            height = tuple_out[1]['data']['height'][j]
+
+
+            avg_color = get_avg_coloured_pixel(img, left, top, width, height)
+            percent = get_percent_coloured(img, left, top, width, height)
+
+            print('Word: {} \tAverage Colour: {} \tPercent Coloured: {}'.format(word, avg_color, percent))

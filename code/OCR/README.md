@@ -7,11 +7,17 @@
 * [x] Create a barebones OCR processing function to get started.
 * [x] Find bounding box information (if possible) within the OCR processing function.
 * [x] Implement pre-processing pipeline to optimize results.
-* [ ] Differentiate sections based on `color`.
-* [ ] Differentiate sections based on `size`.
-  * [ ] Create histogram of sizes to determine which is what.
+* [x] Differentiate sections based on `color`.
+* [ ] Differentiate sections based on `size` and if it's grey.
+  * [x] Create histogram of sizes to determine which is what.
+* [ ] Create JPEG => PNG conversion script.
+* [ ] Create an OCR-based segmentation algorithm:
+  * [x] Create paramaterized algorithm that assigns a score to each (x, y) coordinate pair based on how many OCR-recornized words there are in an `n` pixel radius. It should take `m` long steps.
+  * [ ] Threshold filter.
+  * [ ] Determine {upper left} and {bottom right} coordinates.
 
 ## Notes on Implementation
+
 
 ### Sizing Diagnostics for Line Heights
 
