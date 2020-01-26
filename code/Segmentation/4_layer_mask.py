@@ -17,7 +17,7 @@ MAX_ITERATIONS = 100
 MAX_TRIALS = 20
 LOWEST_CLUSTERS = 10
 HIGHEST_CLUSTERS = 20
-TARGET_COMPAT = 27000000
+TARGET_COMPAT = 270000000000
 
 def read_image(target):
     # FIX DIS
@@ -79,6 +79,7 @@ for clusters in range(LOWEST_CLUSTERS, HIGHEST_CLUSTERS+1, 1):
         rect = Rectangle((x_min, y_min), x_max-x_min, y_max-y_min)
         boxes.append(rect)
     pc = PatchCollection(boxes, facecolor='None', edgecolor="red", linewidths=2)
+    print("made rects")
     ax.add_collection(pc)
         # plt.gca().add_patch(rect[lbl])
         # plt.show()
