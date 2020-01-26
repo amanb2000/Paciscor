@@ -77,6 +77,12 @@ class NLP_Analyzer(object):
 		self.discountInventory = _discountInventory
 		self.store = []  # stores a list of Product for the most recent analyze call
 
+		# Create units string for regex
+		self.UNITS_STR = ''
+		for unit in self.metricInventory.iterrows():
+			self.UNITS_STR += unit[1] + '|'
+		self.UNITS_STR = self.UNITS_STR[:-1]
+
 	def analyze(self, block):
 		"""Analyzes a block and generates key characteristics from
 		each stringObject (dict) within."""
@@ -96,12 +102,15 @@ class NLP_Analyzer(object):
 			if phrase == "":
 				continue
 			# check the phrase for information
-			self.check_deal(phrase, keyChars)
+			# self.check_deal(phrase, keyChars)
 			self.check_product_name(phrase, keyChars)  # product name
 			self.check_organic(phrase, keyChars)  # organic
 
 			# store the keyChar instant
 			self.store.append(keyChars)
+
+		# Determine price data
+		self.find_price_data(block)
 
 		# sort store in order of dict heirachy from 1 (index 0) to 5 (index 4)
 		self.store = sorted(self.store, key=Product.get_heirarchy)
@@ -125,6 +134,7 @@ class NLP_Analyzer(object):
 		# 1st one never contains the product name
 		if keyChars.dictHeirarchy == 1:
 			return
+		keyChars.product_name = []
 		# iterate through item and check for comparison
 		for i in range(self.productInventory["product_name"].count()):
 			# search for product name in phrase
@@ -138,7 +148,50 @@ class NLP_Analyzer(object):
 			keyChars.product_name = max(keyChars.product_name, default=None, key=keyChars.get_metric)
 		return
 
-
+	def find_price_data(self, content):
+		others = []
+		for seg in content:
+			# Correct characters!
+			src = re.sub('°', '¢', seg['text'])
+			# Begin
+			nums = re.findall('[^ &^\n]*[0-9]+[^ &^\n]*', src)
+			valuables = []
+			for inst in nums:
+				# Filter instances (special rules)
+				if len(re.findall('[-]', inst)) > 0:
+					continue
+				# Prep for adding modifiers
+				data = inst
+				# Run before check
+				while True:
+					new_data = re.findall('(?:save|\$)[ |\n]*{}+'.format(data), src, re.IGNORECASE)
+					if new_data is None or len(new_data) < 1:
+						break
+					else:
+						if isinstance(new_data[0], tuple):
+							data = new_data[0][0]
+						else:
+							data = new_data[0]
+				# Run after check
+				print('{}'.format(self.UNITS_STR))
+				while True:
+					new_data = re.findall('{}[ |\n]*(?:off|¢|/|{})'.format(data, self.UNITS_STR), src, re.IGNORECASE)
+					if new_data is None or len(new_data) < 1:
+						break
+					else:
+						if isinstance(new_data[0], tuple):
+							data = new_data[0][0]
+						else:
+							data = new_data[0]
+				if seg['type'] == 1:
+					# Make this driving
+					driving = data # Assume only one is best seg
+				else:
+					others += [data]
+		# Evaluate data
+		print(driving)
+		print(others)
+		return
 
 	def check_deal(self, phrase, keyChars):
 		"""Check the phrase for deals, costs, etc:
@@ -264,5 +317,5 @@ if __name__ == "__main__":
 									processing.generateDiscountInventory())
 	tp = json.load(open('code/NLP/sample_OCR_output_2.json'))
 	results = analyzer.analyze(tuple(tp))
-	print(results.payPrice)
+	# print(results.payPrice)
 	pass
