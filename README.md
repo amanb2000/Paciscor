@@ -22,6 +22,8 @@ Daisy Intelligence Hackathon 2020
 * CSV of potential product names for each ad block.
 * CSV of potential units of measure.
 
+![Example Flyer](https://i.imgur.com/aXM2UWQ.jpg)
+
 ## Needed
 
 1. `flyer_name`: Name of the file we got the rest of the data from.
@@ -35,10 +37,12 @@ Daisy Intelligence Hackathon 2020
 
 # The Grand Unified Pipeline Objectives
 
-## Pre-Processing
+## Pre-Processing: Image Segmentation
 
 * Consider removing banners (if no information exists within them).
 * Consider cropping the white spaces from the images (decrease compute time).
+
+![Low-Resolution Segmentation](https://i.imgur.com/b9IseUr.png)
 
 ## Optical Character Recognition (OCR)
 
@@ -54,12 +58,16 @@ It should be specified to typed font faces.
 
 **Output in `tuple`** (immutable, ordered).
 
+![Tesseract OCR Example](https://i.imgur.com/aryN6oO.jpg)
+
 ## Natural Language Processing
 
 Regex... fuzzy matches...
 
 * Matching
 * Regex for (`%`, `/`, `$`)
+
+![In-House Regex Guide](https://i.imgur.com/8HmeRhv.png)
 
 ## Image Recognition Libraries
 
