@@ -130,14 +130,7 @@ Goal: (1) Create a validation set comprised of `>= 5` flyers and their correspon
 * OCR hyperparameter optimization.
 * etc.
 
-## 3: Contact Experts
-
-* Jad Ghalini.
-* Robert.
-* Hersh.
-* Reddit.
-
-## 4: Use the Help to Expand our Validation Set
+## 3: Use the Help to Expand our Validation Set
 
 This directly helps our final results in that we can have 100% accurate rows in our final product.
 We can also use it to make sure we are not overfitting and to help with the backtracking.
